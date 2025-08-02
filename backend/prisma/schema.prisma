@@ -1,0 +1,96 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Collection {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  filePath    String?
+  configName  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  Runs        Run[]
+  Availabilities APIDailyAvailability[]
+  Reports     Report[]
+}
+
+model Run {
+  id             String          @id @default(uuid())
+  collectionId   String
+  configName     String
+  variableSetName String?
+  status         RunStatus       @default(PENDING)
+  startTime      DateTime        @default(now())
+  endTime        DateTime?
+  totalRequests  Int             @default(0)
+  passedRequests Int             @default(0)
+  failedRequests Int             @default(0)
+  totalTime      Int             @default(0)
+  errorMessage   String?
+  apiResults     APIRunResult[]
+
+  collection     Collection @relation(fields: [collectionId], references: [id])
+}
+
+model APIRunResult {
+  id              String   @id @default(uuid())
+  runId           String
+  itemName        String
+  requestName     String
+  method          String
+  url             String
+  statusCode      Int?
+  responseTime    Float?
+  success         Boolean  @default(true)
+  errorMessage    String?
+  responseBody    String?
+  responseHeaders Json?
+  assertions      Json?
+  timestamp       DateTime @default(now())
+
+  run             Run @relation(fields: [runId], references: [id])
+}
+
+enum RunStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+}
+
+model APIDailyAvailability {
+  id             String   @id @default(uuid())
+  collectionId   String
+  apiName        String
+  apiMethod      String
+  apiUrl         String
+  date           DateTime
+  successCount   Int
+  totalCount     Int
+  availability   Float
+
+  collection     Collection @relation(fields: [collectionId], references: [id])
+}
+
+model Report {
+  id            String   @id @default(uuid())
+  collectionId  String
+  reportType    String
+  reportDate    DateTime
+  reportContent String
+  format        String   @default("PDF")
+  summary       Json?
+  apiCount      Int      @default(0)
+  createdAt     DateTime @default(now())
+
+  collection    Collection @relation(fields: [collectionId], references: [id])
+}

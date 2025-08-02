@@ -1,0 +1,26 @@
+{
+  "name": "Test Collection Configuration",
+  "description": "Configuration for testing Newman integration with AUOB dashboard",
+  "collectionFile": "test-collection.json",
+  "followRedirects": true,
+  "inputSets": [
+    {
+      "baseUrl": "http://localhost:4000",
+      "testValue": "production-test",
+      "environment": "production"
+    },
+    {
+      "baseUrl": "http://localhost:4000",
+      "testValue": "staging-test",
+      "environment": "staging"
+    },
+    {
+      "baseUrl": "http://localhost:4000",
+      "testValue": "development-test",
+      "environment": "development"
+    }
+  ],
+  "createdAt": "2025-07-28T14:00:00.000Z",
+  "updatedAt": "2025-07-28T14:00:00.000Z",
+  "version": "1.0"
+}

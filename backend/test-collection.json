@@ -1,0 +1,138 @@
+{
+  "info": {
+    "name": "AUOB Test Collection",
+    "description": "A test collection for validating Newman integration",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/health",
+          "host": ["{{baseUrl}}"],
+          "path": ["health"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('Response has status property', function () {",
+              "    const jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('status');",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Get Configurations",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/configs",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "configs"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('Response has configs array', function () {",
+              "    const jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('configs');",
+              "    pm.expect(jsonData.configs).to.be.an('array');",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Get Task Statistics",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/tasks/stats",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "tasks", "stats"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('Response has expected statistics', function () {",
+              "    const jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('waiting');",
+              "    pm.expect(jsonData).to.have.property('active');",
+              "    pm.expect(jsonData).to.have.property('completed');",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Test Environment Variable",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-Test-Header",
+            "value": "{{testValue}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/health",
+          "host": ["{{baseUrl}}"],
+          "path": ["health"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('Environment variable was set', function () {",
+              "    pm.expect(pm.variables.get('testValue')).to.not.be.undefined;",
+              "});"
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:4000"
+    }
+  ]
+}
