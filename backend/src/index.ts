@@ -4,6 +4,7 @@ import cors from 'cors';
 import { PrismaClient } from '@prisma/client';
 import configRoutes from './routes/configRoutes';
 import taskRoutes from './routes/taskRoutes';
+import collectionRoutes from './routes/collectionRoutes';
 import { connection, closeRedisConnection, checkRedisHealth } from './config/redis';
 import { shutdownQueue } from './tasks/collectionQueue';
 import { scheduleDailyAvailabilityCalculation, shutdownAvailabilityTask } from './tasks/availabilityTask';
@@ -57,6 +58,7 @@ app.get('/health', async (req, res) => {
 // API Routes
 app.use('/api', configRoutes);
 app.use('/api', taskRoutes);
+app.use(collectionRoutes);
 
 // Initialize Redis connection and background tasks
 const initializeRedis = async () => {

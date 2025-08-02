@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { useDashboardStore } from '../stores/dashboardStore';
-import CollectionCard from '../components/CollectionCard';
+import APIMonitoringCard from '../components/APIMonitoringCard';
+import { collectionApi } from '../api/collectionApi';
 
 const DashboardPage: React.FC = () => {
   const {
@@ -9,10 +10,14 @@ const DashboardPage: React.FC = () => {
     reports,
     loading,
     error,
+    uploadedCollections,
+    uploadedCollectionsLoading,
+    uploadedCollectionsError,
     refreshAllData,
     startAutoRefresh,
     stopAutoRefresh,
     clearError,
+    clearUploadedCollectionsError,
   } = useDashboardStore();
 
   useEffect(() => {
@@ -30,6 +35,39 @@ const DashboardPage: React.FC = () => {
 
   const handleRefresh = () => {
     refreshAllData();
+  };
+
+  const handleRunCollection = async (collectionId: string) => {
+    try {
+      await collectionApi.runCollection(collectionId, { iterations: 1 });
+      // Optionally show success message or redirect to logs
+      console.log(`Collection ${collectionId} run started`);
+    } catch (error) {
+      console.error('Failed to run collection:', error);
+      // Optionally show error message
+    }
+  };
+
+  const handleDeleteCollection = async (collectionId: string) => {
+    try {
+      await collectionApi.deleteCollection(collectionId);
+      // Refresh collections after deletion
+      refreshAllData();
+      console.log(`Collection ${collectionId} deleted`);
+    } catch (error) {
+      console.error('Failed to delete collection:', error);
+      // Optionally show error message
+    }
+  };
+
+  const handleViewLogs = (collectionId: string, apiName?: string) => {
+    // Navigate to logs page with collection and API filters
+    const params = new URLSearchParams();
+    params.set('collection', collectionId);
+    if (apiName) {
+      params.set('api', apiName);
+    }
+    window.location.href = `/logs?${params.toString()}`;
   };
 
   const getOverallSystemStatus = () => {
@@ -161,7 +199,7 @@ const DashboardPage: React.FC = () => {
         </div>
 
         {/* Error Messages */}
-        {(error.systemAvailability || error.collections || error.taskStats || error.reports) && (
+        {(error.systemAvailability || error.collections || error.taskStats || error.reports || uploadedCollectionsError) && (
           <div className="mb-6">
             <div className="bg-red-50 border border-red-200 rounded-md p-4">
               <div className="flex">
@@ -178,6 +216,7 @@ const DashboardPage: React.FC = () => {
                       {error.collections && <li>Collections: {error.collections.message}</li>}
                       {error.taskStats && <li>Task statistics: {error.taskStats.message}</li>}
                       {error.reports && <li>Reports: {error.reports.message}</li>}
+                      {uploadedCollectionsError && <li>Uploaded collections: {uploadedCollectionsError.message}</li>}
                     </ul>
                   </div>
                   <div className="mt-4">
@@ -187,6 +226,7 @@ const DashboardPage: React.FC = () => {
                         clearError('collections');
                         clearError('taskStats');
                         clearError('reports');
+                        clearUploadedCollectionsError();
                       }}
                       className="text-sm text-red-800 hover:text-red-600 font-medium"
                     >
@@ -204,11 +244,11 @@ const DashboardPage: React.FC = () => {
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-lg font-medium text-gray-900">Collections</h2>
             <p className="text-sm text-gray-500">
-              {systemAvailability ? `${systemAvailability.collections.length} collections` : 'Loading...'}
+              {uploadedCollectionsLoading ? 'Loading...' : `${uploadedCollections.length} collections`}
             </p>
           </div>
 
-          {loading.systemAvailability ? (
+          {uploadedCollectionsLoading ? (
             <div className="space-y-4">
               {[1, 2, 3].map((i) => (
                 <div key={i} className="bg-white rounded-lg shadow border border-gray-200 p-6">
@@ -225,12 +265,15 @@ const DashboardPage: React.FC = () => {
                 </div>
               ))}
             </div>
-          ) : systemAvailability && systemAvailability.collections.length > 0 ? (
+          ) : uploadedCollections.length > 0 ? (
             <div className="space-y-6">
-              {systemAvailability.collections.map((collection) => (
-                <CollectionCard 
-                  key={collection.collectionId} 
-                  collection={collection} 
+              {uploadedCollections.map((collection) => (
+                <APIMonitoringCard 
+                  key={collection.id} 
+                  collection={collection}
+                  onRun={handleRunCollection}
+                  onDelete={handleDeleteCollection}
+                  onViewLogs={handleViewLogs}
                 />
               ))}
             </div>

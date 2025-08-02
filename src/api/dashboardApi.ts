@@ -1,4 +1,5 @@
 import axios, { type AxiosResponse } from 'axios';
+import dayjs from 'dayjs';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000';
 
@@ -111,20 +112,50 @@ export const dashboardApi = {
   },
 
   // Get system availability data
-  getSystemAvailability: async (): Promise<{
+  getSystemAvailability: async (params?: {
+    startDate?: string;
+    endDate?: string;
+  }): Promise<{
     overallAvailability: number;
     totalAPIs: number;
     collections: CollectionAvailabilityData[];
   }> => {
     try {
-      const response = await api.get('/api/tasks/availability/system');
-      return response.data;
+      // Use provided dates or default to today for real-time updates
+      const startDate = params?.startDate || dayjs().format('YYYY-MM-DD');
+      const endDate = params?.endDate || dayjs().format('YYYY-MM-DD');
+      
+      const response = await api.get('/api/tasks/availability/system', {
+        params: {
+          startDate,
+          endDate,
+        },
+      });
+      
+      // Map backend response to frontend expected format
+      const backendData = response.data;
+      return {
+        overallAvailability: backendData.averageAvailability || 0,
+        totalAPIs: backendData.totalAPIs || 0,
+        collections: backendData.collections || [], // Backend might not return this field yet
+      };
     } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
-        throw {
-          message: error.response?.data?.message || 'Failed to fetch system availability',
+        const errorMessage = error.response?.data?.message || 'Failed to fetch system availability';
+        const errorDetails = error.response?.data?.error || error.response?.data?.details;
+        
+        console.error('System availability API error:', {
           status: error.response?.status,
-          details: error.response?.data?.details,
+          message: errorMessage,
+          details: errorDetails,
+          url: error.config?.url,
+          params: error.config?.params,
+        });
+        
+        throw {
+          message: errorMessage,
+          status: error.response?.status,
+          details: errorDetails,
         } as DashboardError;
       }
       throw {
@@ -134,18 +165,43 @@ export const dashboardApi = {
   },
 
   // Get collection-specific availability data
-  getCollectionAvailability: async (collectionId: string): Promise<CollectionAvailabilityData> => {
+  getCollectionAvailability: async (
+    collectionId: string, 
+    params?: { startDate?: string; endDate?: string }
+  ): Promise<CollectionAvailabilityData> => {
     try {
+      // Use provided dates or default to today for real-time updates
+      const startDate = params?.startDate || dayjs().format('YYYY-MM-DD');
+      const endDate = params?.endDate || dayjs().format('YYYY-MM-DD');
+      
       const response: AxiosResponse<CollectionAvailabilityData> = await api.get(
-        `/api/tasks/availability/collection/${collectionId}`
+        `/api/tasks/availability/collection/${collectionId}`,
+        {
+          params: {
+            startDate,
+            endDate,
+          },
+        }
       );
       return response.data;
     } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
-        throw {
-          message: error.response?.data?.message || `Failed to fetch collection availability: ${collectionId}`,
+        const errorMessage = error.response?.data?.message || `Failed to fetch collection availability: ${collectionId}`;
+        const errorDetails = error.response?.data?.error || error.response?.data?.details;
+        
+        console.error('Collection availability API error:', {
+          collectionId,
           status: error.response?.status,
-          details: error.response?.data?.details,
+          message: errorMessage,
+          details: errorDetails,
+          url: error.config?.url,
+          params: error.config?.params,
+        });
+        
+        throw {
+          message: errorMessage,
+          status: error.response?.status,
+          details: errorDetails,
         } as DashboardError;
       }
       throw {

@@ -16,6 +16,10 @@ export interface ScheduleOptions {
   };
   removeOnComplete?: number;   // Number of completed jobs to keep
   removeOnFail?: number;       // Number of failed jobs to keep
+  iterations?: number;         // Number of iterations for collection run
+  environment?: string;        // Environment name
+  variables?: Record<string, any>; // Environment variables
+  collectionPath?: string;     // Path to collection file
 }
 
 /**
@@ -24,7 +28,7 @@ export interface ScheduleOptions {
 export const scheduleCollectionRun = async (
   configName: string, 
   options: ScheduleOptions = {}
-): Promise<string> => {
+): Promise<{ jobId: string; runId: string }> => {
   try {
     const jobOptions: JobsOptions = {
       delay: options.delay || 0,
@@ -48,14 +52,21 @@ export const scheduleCollectionRun = async (
       { 
         configName,
         priority: options.priority || 0,
-        scheduledAt: new Date().toISOString()
+        scheduledAt: new Date().toISOString(),
+        iterations: options.iterations,
+        environment: options.environment,
+        variables: options.variables,
+        collectionPath: options.collectionPath
       },
       jobOptions
     );
 
     console.log(`📋 Scheduled collection run for '${configName}' with job ID: ${job.id}`);
     
-    return job.id || 'unknown';
+    const jobId = job.id || 'unknown';
+    const runId = `run-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    
+    return { jobId, runId };
   } catch (error) {
     console.error(`❌ Failed to schedule collection run for '${configName}':`, error);
     throw error;
@@ -65,7 +76,7 @@ export const scheduleCollectionRun = async (
 /**
  * Schedule immediate collection run
  */
-export const runCollectionNow = async (configName: string): Promise<string> => {
+export const runCollectionNow = async (configName: string): Promise<{ jobId: string; runId: string }> => {
   return scheduleCollectionRun(configName, { delay: 0, priority: 10 });
 };
 
@@ -75,7 +86,7 @@ export const runCollectionNow = async (configName: string): Promise<string> => {
 export const scheduleDelayedRun = async (
   configName: string, 
   delayMinutes: number
-): Promise<string> => {
+): Promise<{ jobId: string; runId: string }> => {
   const delayMs = delayMinutes * 60 * 1000;
   return scheduleCollectionRun(configName, { delay: delayMs });
 };
@@ -87,7 +98,7 @@ export const scheduleRecurringRun = async (
   configName: string,
   cronPattern: string,
   limit?: number
-): Promise<string> => {
+): Promise<{ jobId: string; runId: string }> => {
   return scheduleCollectionRun(configName, {
     repeat: {
       pattern: cronPattern,

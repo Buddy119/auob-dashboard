@@ -7,11 +7,17 @@ import {
   type ReportData,
   type DashboardError,
 } from '../api/dashboardApi';
+import { collectionApi } from '../api/collectionApi';
 
 interface DashboardState {
   // Collections
   collections: CollectionConfig[];
   selectedCollection: CollectionConfig | null;
+  
+  // Uploaded Postman Collections
+  uploadedCollections: any[];
+  uploadedCollectionsLoading: boolean;
+  uploadedCollectionsError: DashboardError | null;
   
   // Availability Data
   systemAvailability: {
@@ -53,12 +59,15 @@ interface DashboardState {
   
   expandedCollections: Set<string>;
   refreshInterval: NodeJS.Timeout | null;
+  refreshFailureCount: number;
+  lastSuccessfulRefresh: Date | null;
   
   // Actions
   fetchCollections: () => Promise<void>;
   fetchCollection: (name: string) => Promise<void>;
-  fetchSystemAvailability: () => Promise<void>;
-  fetchCollectionAvailability: (collectionId: string) => Promise<CollectionAvailabilityData | null>;
+  fetchUploadedCollections: () => Promise<void>;
+  fetchSystemAvailability: (dateRange?: { startDate?: string; endDate?: string }) => Promise<void>;
+  fetchCollectionAvailability: (collectionId: string, dateRange?: { startDate?: string; endDate?: string }) => Promise<CollectionAvailabilityData | null>;
   fetchReports: (params?: { page?: number; limit?: number; type?: string; format?: string }) => Promise<void>;
   fetchTaskStats: () => Promise<void>;
   
@@ -67,6 +76,7 @@ interface DashboardState {
   setSelectedCollection: (collection: CollectionConfig | null) => void;
   clearError: (errorType: keyof DashboardState['error']) => void;
   clearAllErrors: () => void;
+  clearUploadedCollectionsError: () => void;
   
   // Refresh Actions
   refreshAllData: () => Promise<void>;
@@ -80,6 +90,9 @@ export const useDashboardStore = create<DashboardState>()(
       // Initial State
       collections: [],
       selectedCollection: null,
+      uploadedCollections: [],
+      uploadedCollectionsLoading: false,
+      uploadedCollectionsError: null,
       systemAvailability: null,
       reports: [],
       reportsTotal: 0,
@@ -103,6 +116,8 @@ export const useDashboardStore = create<DashboardState>()(
       
       expandedCollections: new Set(),
       refreshInterval: null,
+      refreshFailureCount: 0,
+      lastSuccessfulRefresh: null,
       
       // Actions
       fetchCollections: async () => {
@@ -136,19 +151,64 @@ export const useDashboardStore = create<DashboardState>()(
         }
       },
       
-      fetchSystemAvailability: async () => {
+      fetchUploadedCollections: async () => {
+        set(() => ({
+          uploadedCollectionsLoading: true,
+          uploadedCollectionsError: null,
+        }));
+        
+        try {
+          const response = await collectionApi.getCollections();
+          const collections = Array.isArray(response) ? response : (response as any)?.data || [];
+          
+          // Validate that we received valid data before updating state
+          if (Array.isArray(collections) && collections.length >= 0) {
+            console.log(`✅ Fetched ${collections.length} collections successfully`);
+            set(() => ({
+              uploadedCollections: collections,
+              uploadedCollectionsLoading: false,
+            }));
+          } else {
+            console.warn('⚠️ Empty or invalid collections data received, retaining existing data');
+            set(() => ({
+              uploadedCollectionsLoading: false,
+              uploadedCollectionsError: {
+                message: 'Invalid response format received from server',
+                status: 200,
+                details: 'Response was not in expected array format'
+              } as DashboardError,
+            }));
+          }
+        } catch (error) {
+          console.error('❌ Failed to fetch uploaded collections:', error);
+          
+          // Don't clear existing collections on error - preserve them
+          set(() => ({
+            uploadedCollectionsLoading: false,
+            uploadedCollectionsError: {
+              message: error instanceof Error ? error.message : 'Failed to fetch collections',
+              status: (error as any)?.status || 500,
+              details: 'Network or server error occurred while fetching collections'
+            } as DashboardError,
+            // Keep existing uploadedCollections - don't clear them
+          }));
+        }
+      },
+      
+      fetchSystemAvailability: async (dateRange?: { startDate?: string; endDate?: string }) => {
         set((state) => ({
           loading: { ...state.loading, systemAvailability: true },
           error: { ...state.error, systemAvailability: null },
         }));
         
         try {
-          const systemAvailability = await dashboardApi.getSystemAvailability();
+          const systemAvailability = await dashboardApi.getSystemAvailability(dateRange);
           set((state) => ({
             systemAvailability,
             loading: { ...state.loading, systemAvailability: false },
           }));
         } catch (error) {
+          console.error('Failed to fetch system availability:', error);
           set((state) => ({
             loading: { ...state.loading, systemAvailability: false },
             error: { ...state.error, systemAvailability: error as DashboardError },
@@ -156,9 +216,9 @@ export const useDashboardStore = create<DashboardState>()(
         }
       },
       
-      fetchCollectionAvailability: async (collectionId: string) => {
+      fetchCollectionAvailability: async (collectionId: string, dateRange?: { startDate?: string; endDate?: string }) => {
         try {
-          const collectionAvailability = await dashboardApi.getCollectionAvailability(collectionId);
+          const collectionAvailability = await dashboardApi.getCollectionAvailability(collectionId, dateRange);
           
           // Update the system availability collections array with new data
           set((state) => {
@@ -262,19 +322,60 @@ export const useDashboardStore = create<DashboardState>()(
             reports: null,
             taskStats: null,
           },
+          uploadedCollectionsError: null,
+        });
+      },
+      
+      clearUploadedCollectionsError: () => {
+        set({
+          uploadedCollectionsError: null,
         });
       },
       
       // Refresh Actions
       refreshAllData: async () => {
-        const { fetchCollections, fetchSystemAvailability, fetchReports, fetchTaskStats } = get();
+        const { fetchCollections, fetchUploadedCollections, fetchSystemAvailability, fetchReports, fetchTaskStats } = get();
         
-        await Promise.allSettled([
+        console.log('🔄 Starting dashboard refresh...');
+        const startTime = Date.now();
+        
+        const results = await Promise.allSettled([
           fetchCollections(),
+          fetchUploadedCollections(),
           fetchSystemAvailability(),
           fetchReports({ page: 1, limit: 10 }),
           fetchTaskStats(),
         ]);
+        
+        const endTime = Date.now();
+        const duration = endTime - startTime;
+        
+        // Log results for debugging
+        const refreshResults = {
+          collections: results[0].status,
+          uploadedCollections: results[1].status,
+          systemAvailability: results[2].status,
+          reports: results[3].status,
+          taskStats: results[4].status,
+        };
+        
+        console.log(`✅ Dashboard refresh completed in ${duration}ms:`, refreshResults);
+        
+        // Count failures and update refresh tracking
+        const failures = results.filter(result => result.status === 'rejected').length;
+        
+        if (failures === 0) {
+          // Successful refresh - reset failure count
+          set(() => ({
+            refreshFailureCount: 0,
+            lastSuccessfulRefresh: new Date(),
+          }));
+        } else {
+          console.warn(`⚠️ ${failures} out of ${results.length} refresh operations failed`);
+          set((state) => ({
+            refreshFailureCount: state.refreshFailureCount + 1,
+          }));
+        }
       },
       
       startAutoRefresh: (intervalMs = 30000) => {
@@ -283,8 +384,26 @@ export const useDashboardStore = create<DashboardState>()(
         // Clear existing interval
         stopAutoRefresh();
         
-        const intervalId = setInterval(() => {
-          refreshAllData();
+        const intervalId = setInterval(async () => {
+          const currentState = get();
+          
+          // Implement exponential backoff on repeated failures
+          const backoffMultiplier = Math.min(Math.pow(2, currentState.refreshFailureCount), 8); // Max 8x delay
+          const effectiveInterval = intervalMs * backoffMultiplier;
+          
+          if (currentState.refreshFailureCount > 0) {
+            console.log(`⏳ Refresh delayed due to ${currentState.refreshFailureCount} failures. Next refresh in ${effectiveInterval/1000}s`);
+            
+            // Only proceed if enough time has passed since last failure
+            if (currentState.lastSuccessfulRefresh) {
+              const timeSinceLastSuccess = Date.now() - currentState.lastSuccessfulRefresh.getTime();
+              if (timeSinceLastSuccess < effectiveInterval) {
+                return; // Skip this refresh cycle
+              }
+            }
+          }
+          
+          await refreshAllData();
         }, intervalMs) as NodeJS.Timeout;
         
         set({ refreshInterval: intervalId });

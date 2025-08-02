@@ -1,0 +1,1107 @@
+{
+	"info": {
+		"_postman_id": "61183df9-6ba1-446e-82b9-7fdd2e930ded",
+		"name": "List of 10 public free APIs for students",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "40239589"
+	},
+	"item": [
+		{
+			"name": "location of property",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.expect(pm.response.code).to.eql(200);"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://data.cityofnewyork.us/resource/enfh-gkve.json?location=100 St., 98 St. bet. 24 Ave. and 25 Ave.",
+					"protocol": "https",
+					"host": [
+						"data",
+						"cityofnewyork",
+						"us"
+					],
+					"path": [
+						"resource",
+						"enfh-gkve.json"
+					],
+					"query": [
+						{
+							"key": "location",
+							"value": "100 St., 98 St. bet. 24 Ave. and 25 Ave."
+						}
+					]
+				},
+				"description": "This request gets a description of the location of a property with respect to the street system and physical features such as water bodies.\n\nLink: [https://dev.socrata.com/foundry/data.cityofnewyork.us/enfh-gkve](https://dev.socrata.com/foundry/data.cityofnewyork.us/enfh-gkve)"
+			},
+			"response": [
+				{
+					"name": "location of property",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://data.cityofnewyork.us/resource/enfh-gkve.json?location=100 St., 98 St. bet. 24 Ave. and 25 Ave.",
+							"protocol": "https",
+							"host": [
+								"data",
+								"cityofnewyork",
+								"us"
+							],
+							"path": [
+								"resource",
+								"enfh-gkve.json"
+							],
+							"query": [
+								{
+									"key": "location",
+									"value": "100 St., 98 St. bet. 24 Ave. and 25 Ave."
+								}
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Server",
+							"value": "nginx"
+						},
+						{
+							"key": "Date",
+							"value": "Fri, 24 Feb 2023 14:52:01 GMT"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json;charset=utf-8"
+						},
+						{
+							"key": "Transfer-Encoding",
+							"value": "chunked"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "*"
+						},
+						{
+							"key": "ETag",
+							"value": "\"Y2hhcmxpZS42MzUyMV8xXzc0LUgzVE1sYlF3TTVNajZaUHVfNnNyaWZqcXNj---gzipsQwH3P0Uqpkh8kxwsY79HFkxrKY--gzip--gzip\""
+						},
+						{
+							"key": "X-SODA2-Fields",
+							"value": "[\"acquisitiondate\",\"acres\",\"address\",\"borough\",\"class\",\"communityboard\",\"councildistrict\",\"department\",\"eapply\",\"gisobjid\",\"gispropnum\",\"globalid\",\"jurisdiction\",\"location\",\"mapped\",\"name311\",\"nys_assembly\",\"nys_senate\",\"objectid\",\"omppropid\",\"parentid\",\"permit\",\"permitdistrict\",\"permitparent\",\"pip_ratable\",\"precinct\",\"retired\",\"signname\",\"subcategory\",\"typecategory\",\"url\",\"us_congress\",\"waterfront\",\"zipcode\",\"multipolygon\"]"
+						},
+						{
+							"key": "X-SODA2-Types",
+							"value": "[\"text\",\"number\",\"text\",\"text\",\"text\",\"number\",\"number\",\"text\",\"text\",\"number\",\"text\",\"text\",\"text\",\"text\",\"text\",\"text\",\"number\",\"number\",\"number\",\"text\",\"text\",\"boolean\",\"text\",\"text\",\"boolean\",\"number\",\"boolean\",\"text\",\"text\",\"text\",\"text\",\"number\",\"boolean\",\"number\",\"multipolygon\"]"
+						},
+						{
+							"key": "X-SODA2-Data-Out-Of-Date",
+							"value": "false"
+						},
+						{
+							"key": "X-SODA2-Truth-Last-Modified",
+							"value": "Wed, 11 Jan 2023 14:04:33 GMT"
+						},
+						{
+							"key": "X-SODA2-Secondary-Last-Modified",
+							"value": "Wed, 11 Jan 2023 14:04:33 GMT"
+						},
+						{
+							"key": "Last-Modified",
+							"value": "Wed, 11 Jan 2023 14:04:33 GMT"
+						},
+						{
+							"key": "Vary",
+							"value": "Accept-Encoding"
+						},
+						{
+							"key": "Content-Encoding",
+							"value": "gzip"
+						},
+						{
+							"key": "Age",
+							"value": "0"
+						},
+						{
+							"key": "X-Socrata-Region",
+							"value": "aws-us-east-1-fedramp-prod"
+						},
+						{
+							"key": "Strict-Transport-Security",
+							"value": "max-age=31536000; includeSubDomains"
+						},
+						{
+							"key": "X-Socrata-RequestId",
+							"value": "9b630f8b5bdca1bf7b596a07c884b940"
+						}
+					],
+					"cookie": [],
+					"body": "[\n    {\n        \"acquisitiondate\": \"1951-08-09 00:00:00.0000000\",\n        \"acres\": \"3.827\",\n        \"address\": \"98-01 25 AVENUE\",\n        \"borough\": \"Q\",\n        \"class\": \"PARK\",\n        \"communityboard\": \"403\",\n        \"councildistrict\": \"21\",\n        \"department\": \"Q-03\",\n        \"eapply\": \"East Elmhurst Playground\",\n        \"gisobjid\": \"100000140\",\n        \"gispropnum\": \"Q373\",\n        \"globalid\": \"FE80558A-00B8-4825-95A5-2805EA0E0CEE\",\n        \"jurisdiction\": \"DPR/DOE\",\n        \"location\": \"100 St., 98 St. bet. 24 Ave. and 25 Ave.\",\n        \"mapped\": \"False\",\n        \"name311\": \"Helen Marshall Playground\",\n        \"nys_assembly\": \"35\",\n        \"nys_senate\": \"13\",\n        \"objectid\": \"4881\",\n        \"omppropid\": \"Q373\",\n        \"parentid\": \"Q-03\",\n        \"permit\": true,\n        \"permitdistrict\": \"Q-03\",\n        \"permitparent\": \"Q-03\",\n        \"pip_ratable\": true,\n        \"precinct\": \"115\",\n        \"retired\": false,\n        \"signname\": \"Helen Marshall Playground\",\n        \"subcategory\": \"JOP\",\n        \"typecategory\": \"Jointly Operated Playground\",\n        \"url\": \"http://www.nycgovparks.org/parks/Q373/\",\n        \"us_congress\": \"14\",\n        \"waterfront\": false,\n        \"zipcode\": \"11369\",\n        \"multipolygon\": {\n            \"type\": \"MultiPolygon\",\n            \"coordinates\": [\n                [\n                    [\n                        [\n                            -73.8702121052178,\n                            40.7662630696453\n                        ],\n                        [\n                            -73.87159149375225,\n                            40.766119156735826\n                        ],\n                        [\n                            -73.87154383479682,\n                            40.765855196258364\n                        ],\n                        [\n                            -73.87189254360733,\n                            40.765818813309885\n                        ],\n                        [\n                            -73.87180955940245,\n                            40.76535920237023\n                        ],\n                        [\n                            -73.87111215081137,\n                            40.76543199193358\n                        ],\n                        [\n                            -73.87100128360814,\n                            40.76481790537266\n                        ],\n                        [\n                            -73.86997221783915,\n                            40.76492355655017\n                        ],\n                        [\n                            -73.8702121052178,\n                            40.7662630696453\n                        ]\n                    ]\n                ]\n            ]\n        }\n    }\n]"
+				},
+				{
+					"name": "location of property",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://data.cityofnewyork.us/resource/enfh-gkve.json?location=100 St., 98 St. bet. 24 Ave. and 25 Ave.",
+							"protocol": "https",
+							"host": [
+								"data",
+								"cityofnewyork",
+								"us"
+							],
+							"path": [
+								"resource",
+								"enfh-gkve.json"
+							],
+							"query": [
+								{
+									"key": "location",
+									"value": "100 St., 98 St. bet. 24 Ave. and 25 Ave."
+								}
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Server",
+							"value": "nginx"
+						},
+						{
+							"key": "Date",
+							"value": "Fri, 24 Feb 2023 14:52:01 GMT"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json;charset=utf-8"
+						},
+						{
+							"key": "Transfer-Encoding",
+							"value": "chunked"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "*"
+						},
+						{
+							"key": "ETag",
+							"value": "\"Y2hhcmxpZS42MzUyMV8xXzc0LUgzVE1sYlF3TTVNajZaUHVfNnNyaWZqcXNj---gzipsQwH3P0Uqpkh8kxwsY79HFkxrKY--gzip--gzip\""
+						},
+						{
+							"key": "X-SODA2-Fields",
+							"value": "[\"acquisitiondate\",\"acres\",\"address\",\"borough\",\"class\",\"communityboard\",\"councildistrict\",\"department\",\"eapply\",\"gisobjid\",\"gispropnum\",\"globalid\",\"jurisdiction\",\"location\",\"mapped\",\"name311\",\"nys_assembly\",\"nys_senate\",\"objectid\",\"omppropid\",\"parentid\",\"permit\",\"permitdistrict\",\"permitparent\",\"pip_ratable\",\"precinct\",\"retired\",\"signname\",\"subcategory\",\"typecategory\",\"url\",\"us_congress\",\"waterfront\",\"zipcode\",\"multipolygon\"]"
+						},
+						{
+							"key": "X-SODA2-Types",
+							"value": "[\"text\",\"number\",\"text\",\"text\",\"text\",\"number\",\"number\",\"text\",\"text\",\"number\",\"text\",\"text\",\"text\",\"text\",\"text\",\"text\",\"number\",\"number\",\"number\",\"text\",\"text\",\"boolean\",\"text\",\"text\",\"boolean\",\"number\",\"boolean\",\"text\",\"text\",\"text\",\"text\",\"number\",\"boolean\",\"number\",\"multipolygon\"]"
+						},
+						{
+							"key": "X-SODA2-Data-Out-Of-Date",
+							"value": "false"
+						},
+						{
+							"key": "X-SODA2-Truth-Last-Modified",
+							"value": "Wed, 11 Jan 2023 14:04:33 GMT"
+						},
+						{
+							"key": "X-SODA2-Secondary-Last-Modified",
+							"value": "Wed, 11 Jan 2023 14:04:33 GMT"
+						},
+						{
+							"key": "Last-Modified",
+							"value": "Wed, 11 Jan 2023 14:04:33 GMT"
+						},
+						{
+							"key": "Vary",
+							"value": "Accept-Encoding"
+						},
+						{
+							"key": "Content-Encoding",
+							"value": "gzip"
+						},
+						{
+							"key": "Age",
+							"value": "0"
+						},
+						{
+							"key": "X-Socrata-Region",
+							"value": "aws-us-east-1-fedramp-prod"
+						},
+						{
+							"key": "Strict-Transport-Security",
+							"value": "max-age=31536000; includeSubDomains"
+						},
+						{
+							"key": "X-Socrata-RequestId",
+							"value": "9b630f8b5bdca1bf7b596a07c884b940"
+						}
+					],
+					"cookie": [],
+					"body": "[\n    {\n        \"acquisitiondate\": \"1951-08-09 00:00:00.0000000\",\n        \"acres\": \"3.827\",\n        \"address\": \"98-01 25 AVENUE\",\n        \"borough\": \"Q\",\n        \"class\": \"PARK\",\n        \"communityboard\": \"403\",\n        \"councildistrict\": \"21\",\n        \"department\": \"Q-03\",\n        \"eapply\": \"East Elmhurst Playground\",\n        \"gisobjid\": \"100000140\",\n        \"gispropnum\": \"Q373\",\n        \"globalid\": \"FE80558A-00B8-4825-95A5-2805EA0E0CEE\",\n        \"jurisdiction\": \"DPR/DOE\",\n        \"location\": \"100 St., 98 St. bet. 24 Ave. and 25 Ave.\",\n        \"mapped\": \"False\",\n        \"name311\": \"Helen Marshall Playground\",\n        \"nys_assembly\": \"35\",\n        \"nys_senate\": \"13\",\n        \"objectid\": \"4881\",\n        \"omppropid\": \"Q373\",\n        \"parentid\": \"Q-03\",\n        \"permit\": true,\n        \"permitdistrict\": \"Q-03\",\n        \"permitparent\": \"Q-03\",\n        \"pip_ratable\": true,\n        \"precinct\": \"115\",\n        \"retired\": false,\n        \"signname\": \"Helen Marshall Playground\",\n        \"subcategory\": \"JOP\",\n        \"typecategory\": \"Jointly Operated Playground\",\n        \"url\": \"http://www.nycgovparks.org/parks/Q373/\",\n        \"us_congress\": \"14\",\n        \"waterfront\": false,\n        \"zipcode\": \"11369\",\n        \"multipolygon\": {\n            \"type\": \"MultiPolygon\",\n            \"coordinates\": [\n                [\n                    [\n                        [\n                            -73.8702121052178,\n                            40.7662630696453\n                        ],\n                        [\n                            -73.87159149375225,\n                            40.766119156735826\n                        ],\n                        [\n                            -73.87154383479682,\n                            40.765855196258364\n                        ],\n                        [\n                            -73.87189254360733,\n                            40.765818813309885\n                        ],\n                        [\n                            -73.87180955940245,\n                            40.76535920237023\n                        ],\n                        [\n                            -73.87111215081137,\n                            40.76543199193358\n                        ],\n                        [\n                            -73.87100128360814,\n                            40.76481790537266\n                        ],\n                        [\n                            -73.86997221783915,\n                            40.76492355655017\n                        ],\n                        [\n                            -73.8702121052178,\n                            40.7662630696453\n                        ]\n                    ]\n                ]\n            ]\n        }\n    }\n]"
+				}
+			]
+		},
+		{
+			"name": "Sunrise & Sunset times",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.expect(pm.response.code).to.eql(200);"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://api.sunrisesunset.io/json?lat=38.907192&lng=-77.036873&timezone=UTC&date=today\nhttps://api.sunrisesunset.io/json?lat=38.907192&lng=-77.036873&timezone=UTC&date=1990-05-22",
+					"protocol": "https",
+					"host": [
+						"api",
+						"sunrisesunset",
+						"io"
+					],
+					"path": [
+						"json"
+					],
+					"query": [
+						{
+							"key": "lat",
+							"value": "38.907192"
+						},
+						{
+							"key": "lng",
+							"value": "-77.036873"
+						},
+						{
+							"key": "timezone",
+							"value": "UTC"
+						},
+						{
+							"key": "date",
+							"value": "today\nhttps://api.sunrisesunset.io/json?lat=38.907192"
+						},
+						{
+							"key": "lng",
+							"value": "-77.036873"
+						},
+						{
+							"key": "timezone",
+							"value": "UTC"
+						},
+						{
+							"key": "date",
+							"value": "1990-05-22"
+						}
+					]
+				},
+				"description": "This request gets the current day's sunrise and sunset times  \n  \n  \nLink: [https://sunrisesunset.io/api/](https://sunrisesunset.io/api/)"
+			},
+			"response": [
+				{
+					"name": "Sunrise & Sunset times",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://api.sunrisesunset.io/json?lat=38.907192&lng=-77.036873&timezone=UTC&date=today\nhttps://api.sunrisesunset.io/json?lat=38.907192&lng=-77.036873&timezone=UTC&date=1990-05-22",
+							"protocol": "https",
+							"host": [
+								"api",
+								"sunrisesunset",
+								"io"
+							],
+							"path": [
+								"json"
+							],
+							"query": [
+								{
+									"key": "lat",
+									"value": "38.907192"
+								},
+								{
+									"key": "lng",
+									"value": "-77.036873"
+								},
+								{
+									"key": "timezone",
+									"value": "UTC"
+								},
+								{
+									"key": "date",
+									"value": "today\nhttps://api.sunrisesunset.io/json?lat=38.907192"
+								},
+								{
+									"key": "lng",
+									"value": "-77.036873"
+								},
+								{
+									"key": "timezone",
+									"value": "UTC"
+								},
+								{
+									"key": "date",
+									"value": "1990-05-22"
+								}
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Date",
+							"value": "Fri, 24 Feb 2023 14:52:22 GMT"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						},
+						{
+							"key": "Transfer-Encoding",
+							"value": "chunked"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						},
+						{
+							"key": "CF-Ray",
+							"value": "79e9065018f88cd6-EWR"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "*"
+						},
+						{
+							"key": "Cache-Control",
+							"value": "s-max-age=480, max-age=480"
+						},
+						{
+							"key": "Link",
+							"value": "<https://sunrisesunset.io/wp-json/>; rel=\"https://api.w.org/\""
+						},
+						{
+							"key": "Strict-Transport-Security",
+							"value": "max-age=15552000"
+						},
+						{
+							"key": "Vary",
+							"value": "Accept-Encoding"
+						},
+						{
+							"key": "CF-Cache-Status",
+							"value": "DYNAMIC"
+						},
+						{
+							"key": "fastcgi-cache",
+							"value": "BYPASS"
+						},
+						{
+							"key": "x-content-type-options",
+							"value": "nosniff"
+						},
+						{
+							"key": "x-frame-options",
+							"value": "SAMEORIGIN"
+						},
+						{
+							"key": "x-ua-compatible",
+							"value": "IE=edge"
+						},
+						{
+							"key": "x-xss-protection",
+							"value": "1; mode=block"
+						},
+						{
+							"key": "Report-To",
+							"value": "{\"endpoints\":[{\"url\":\"https:\\/\\/a.nel.cloudflare.com\\/report\\/v3?s=SoEv2xeXL4haxwtnKVcgL0HiNsl0byORf3mVZ%2FagRAkuk7mZhJLYrsc43NBtE3wZFVZboYO2CpJ0n%2FPXosyZSujyYJkIy6tLWSejRxbQyTqB8GGuIZzoTbSJoN0NM0epe6gGGkf9Xw%3D%3D\"}],\"group\":\"cf-nel\",\"max_age\":604800}"
+						},
+						{
+							"key": "NEL",
+							"value": "{\"success_fraction\":0,\"report_to\":\"cf-nel\",\"max_age\":604800}"
+						},
+						{
+							"key": "Server",
+							"value": "cloudflare"
+						},
+						{
+							"key": "Content-Encoding",
+							"value": "br"
+						},
+						{
+							"key": "alt-svc",
+							"value": "h3=\":443\"; ma=86400, h3-29=\":443\"; ma=86400"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"results\": {\n        \"sunrise\": \"9:52:03 AM\",\n        \"sunset\": \"12:20:22 AM\",\n        \"first_light\": \"8:01:33 AM\",\n        \"last_light\": \"2:10:52 AM\",\n        \"dawn\": \"9:21:29 AM\",\n        \"dusk\": \"12:50:56 AM\",\n        \"solar_noon\": \"5:06:12 PM\",\n        \"golden_hour\": \"11:41:50 PM\",\n        \"day_length\": \"14:28:19\",\n        \"timezone\": \"UTC\"\n    },\n    \"status\": \"OK\"\n}"
+				}
+			]
+		},
+		{
+			"name": "Data on rock band Nirvana",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.expect(pm.response.code).to.eql(200);"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://musicbrainz.org/ws/2/artist/5b11f4ce-a62d-471e-81fc-a69a8278c7da?inc=aliases",
+					"protocol": "http",
+					"host": [
+						"musicbrainz",
+						"org"
+					],
+					"path": [
+						"ws",
+						"2",
+						"artist",
+						"5b11f4ce-a62d-471e-81fc-a69a8278c7da"
+					],
+					"query": [
+						{
+							"key": "inc",
+							"value": "aliases"
+						}
+					]
+				},
+				"description": "This request returns data for the rock band Nirvana\n\nLink: [https://musicbrainz.org/doc/MusicBrainz_API/Examples](https://musicbrainz.org/doc/MusicBrainz_API/Examples)"
+			},
+			"response": [
+				{
+					"name": "Data on rock band Nirvana",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://musicbrainz.org/ws/2/artist/5b11f4ce-a62d-471e-81fc-a69a8278c7da?inc=aliases",
+							"protocol": "http",
+							"host": [
+								"musicbrainz",
+								"org"
+							],
+							"path": [
+								"ws",
+								"2",
+								"artist",
+								"5b11f4ce-a62d-471e-81fc-a69a8278c7da"
+							],
+							"query": [
+								{
+									"key": "inc",
+									"value": "aliases"
+								}
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "xml",
+					"header": [
+						{
+							"key": "Date",
+							"value": "Fri, 24 Feb 2023 14:52:42 GMT"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/xml; charset=utf-8"
+						},
+						{
+							"key": "Transfer-Encoding",
+							"value": "chunked"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=15"
+						},
+						{
+							"key": "Vary",
+							"value": "Accept-Encoding"
+						},
+						{
+							"key": "X-RateLimit-Limit",
+							"value": "1200"
+						},
+						{
+							"key": "X-RateLimit-Remaining",
+							"value": "708"
+						},
+						{
+							"key": "X-RateLimit-Reset",
+							"value": "1677250363"
+						},
+						{
+							"key": "Server",
+							"value": "Plack::Handler::Starlet"
+						},
+						{
+							"key": "ETag",
+							"value": "W/\"75154333f0383ff8792045ae48efb412\""
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "*"
+						},
+						{
+							"key": "X-Cache-Status",
+							"value": "MISS"
+						},
+						{
+							"key": "Content-Encoding",
+							"value": "gzip"
+						}
+					],
+					"cookie": [],
+					"body": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<metadata xmlns=\"http://musicbrainz.org/ns/mmd-2.0#\">\n    <artist id=\"5b11f4ce-a62d-471e-81fc-a69a8278c7da\" type=\"Group\" type-id=\"e431f5f6-b5d2-343d-8b36-72607fffb74b\">\n        <name>Nirvana</name>\n        <sort-name>Nirvana</sort-name>\n        <disambiguation>90s US grunge band</disambiguation>\n        <isni-list>\n            <isni>0000000123486830</isni>\n            <isni>0000000123487390</isni>\n        </isni-list>\n        <country>US</country>\n        <area id=\"489ce91b-6658-3307-9877-795b68554c98\">\n            <name>United States</name>\n            <sort-name>United States</sort-name>\n            <iso-3166-1-code-list>\n                <iso-3166-1-code>US</iso-3166-1-code>\n            </iso-3166-1-code-list>\n        </area>\n        <begin-area id=\"a640b45c-c173-49b1-8030-973603e895b5\">\n            <name>Aberdeen</name>\n            <sort-name>Aberdeen</sort-name>\n        </begin-area>\n        <life-span>\n            <begin>1988-01</begin>\n            <end>1994-04-05</end>\n            <ended>true</ended>\n        </life-span>\n        <alias-list count=\"3\">\n            <alias locale=\"en\" sort-name=\"Nirvana\" type=\"Artist name\" type-id=\"894afba6-2816-3c24-8072-eadb66bd04bc\" primary=\"primary\">Nirvana</alias>\n            <alias sort-name=\"Nirvana US\">Nirvana US</alias>\n            <alias locale=\"ja\" sort-name=\"ニルヴァーナ\" type=\"Artist name\" type-id=\"894afba6-2816-3c24-8072-eadb66bd04bc\" primary=\"primary\">ニルヴァーナ</alias>\n        </alias-list>\n    </artist>\n</metadata>"
+				}
+			]
+		},
+		{
+			"name": "University name and domain",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.expect(pm.response.code).to.eql(200);"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://universities.hipolabs.com/search?name=middle&country=turkey",
+					"protocol": "http",
+					"host": [
+						"universities",
+						"hipolabs",
+						"com"
+					],
+					"path": [
+						"search"
+					],
+					"query": [
+						{
+							"key": "name",
+							"value": "middle"
+						},
+						{
+							"key": "country",
+							"value": "turkey"
+						}
+					]
+				},
+				"description": "This request gets a university name and domain given a search term and country\n\nLink: [https://github.com/Hipo/university-domains-list](https://github.com/Hipo/university-domains-list)"
+			},
+			"response": [
+				{
+					"name": "University name and domain",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://universities.hipolabs.com/search?name=middle&country=turkey",
+							"protocol": "http",
+							"host": [
+								"universities",
+								"hipolabs",
+								"com"
+							],
+							"path": [
+								"search"
+							],
+							"query": [
+								{
+									"key": "name",
+									"value": "middle"
+								},
+								{
+									"key": "country",
+									"value": "turkey"
+								}
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Server",
+							"value": "nginx/1.14.0"
+						},
+						{
+							"key": "Date",
+							"value": "Thu, 23 Feb 2023 22:17:54 GMT"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						},
+						{
+							"key": "Content-Length",
+							"value": "185"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "*"
+						}
+					],
+					"cookie": [],
+					"body": "[\n    {\n        \"domains\": [\n            \"metu.edu.tr\"\n        ],\n        \"name\": \"Middle East Technical University\",\n        \"web_pages\": [\n            \"http://www.metu.edu.tr/\"\n        ],\n        \"country\": \"Turkey\",\n        \"state-province\": null,\n        \"alpha_two_code\": \"TR\"\n    }\n]"
+				}
+			]
+		},
+		{
+			"name": "Drug record",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.expect(pm.response.code).to.eql(200);"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://api.fda.gov/drug/event.json?limit=1",
+					"protocol": "https",
+					"host": [
+						"api",
+						"fda",
+						"gov"
+					],
+					"path": [
+						"drug",
+						"event.json"
+					],
+					"query": [
+						{
+							"key": "limit",
+							"value": "1"
+						}
+					]
+				},
+				"description": "This request searches in the `drug/event`endpoint for a single record, and returns it. The record contains all kinds of information about the adverse event report, including the drugs that the patient was taking, the reactions that the patient experienced, and a good deal of other context.\n\nEach endpoint has its own unique fields, particular to the kind of data that it serves.\n\nLink: [https://open.fda.gov/apis/try-the-api/](https://open.fda.gov/apis/try-the-api/)"
+			},
+			"response": [
+				{
+					"name": "Drug record",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://api.fda.gov/drug/event.json?limit=1",
+							"protocol": "https",
+							"host": [
+								"api",
+								"fda",
+								"gov"
+							],
+							"path": [
+								"drug",
+								"event.json"
+							],
+							"query": [
+								{
+									"key": "limit",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Date",
+							"value": "Thu, 23 Feb 2023 22:46:11 GMT"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json; charset=utf-8"
+						},
+						{
+							"key": "Transfer-Encoding",
+							"value": "chunked"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						},
+						{
+							"key": "Access-Control-Allow-Credentials",
+							"value": "true"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "*"
+						},
+						{
+							"key": "Age",
+							"value": "2"
+						},
+						{
+							"key": "Cache-Control",
+							"value": "no-cache, no-store, must-revalidate"
+						},
+						{
+							"key": "Content-Encoding",
+							"value": "gzip"
+						},
+						{
+							"key": "Content-Security-Policy",
+							"value": "default-src 'none'"
+						},
+						{
+							"key": "Etag",
+							"value": "W/\"71b-WyjqcB/pDS6NNwJAoYOCzJ/FpZU\""
+						},
+						{
+							"key": "Link",
+							"value": "<https://api.fda.gov/drug/event.json?limit=1&skip=0&search_after=0%3D1000000032>; rel=\"next\""
+						},
+						{
+							"key": "Strict-Transport-Security",
+							"value": "max-age=31536000;"
+						},
+						{
+							"key": "Strict-Transport-Security",
+							"value": "max-age=31536000; preload"
+						},
+						{
+							"key": "Vary",
+							"value": "Accept-Encoding"
+						},
+						{
+							"key": "Vary",
+							"value": "Accept-Encoding"
+						},
+						{
+							"key": "Via",
+							"value": "http/1.1 api-umbrella (ApacheTrafficServer [cMsSf ])"
+						},
+						{
+							"key": "X-Cache",
+							"value": "MISS"
+						},
+						{
+							"key": "X-Content-Type-Options",
+							"value": "nosniff"
+						},
+						{
+							"key": "X-Vcap-Request-Id",
+							"value": "bf954db3-168f-421a-59ed-e904955a6afa"
+						},
+						{
+							"key": "X-Xss-Protection",
+							"value": "1; mode=block"
+						},
+						{
+							"key": "X-Frame-Options",
+							"value": "deny"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"meta\": {\n        \"disclaimer\": \"Do not rely on openFDA to make decisions regarding medical care. While we make every effort to ensure that data is accurate, you should assume all results are unvalidated. We may limit or otherwise restrict your access to the API in line with our Terms of Service.\",\n        \"terms\": \"https://open.fda.gov/terms/\",\n        \"license\": \"https://open.fda.gov/license/\",\n        \"last_updated\": \"2023-01-30\",\n        \"results\": {\n            \"skip\": 0,\n            \"limit\": 1,\n            \"total\": 16011276\n        }\n    },\n    \"results\": [\n        {\n            \"safetyreportid\": \"5801206-7\",\n            \"transmissiondateformat\": \"102\",\n            \"transmissiondate\": \"20090109\",\n            \"serious\": \"1\",\n            \"seriousnessdeath\": \"1\",\n            \"receivedateformat\": \"102\",\n            \"receivedate\": \"20080707\",\n            \"receiptdateformat\": \"102\",\n            \"receiptdate\": \"20080625\",\n            \"fulfillexpeditecriteria\": \"1\",\n            \"companynumb\": \"JACAN16471\",\n            \"primarysource\": {\n                \"reportercountry\": \"CANADA\",\n                \"qualification\": \"3\"\n            },\n            \"sender\": {\n                \"senderorganization\": \"FDA-Public Use\"\n            },\n            \"receiver\": null,\n            \"patient\": {\n                \"patientonsetage\": \"26\",\n                \"patientonsetageunit\": \"801\",\n                \"patientsex\": \"1\",\n                \"patientdeath\": {\n                    \"patientdeathdateformat\": null,\n                    \"patientdeathdate\": null\n                },\n                \"reaction\": [\n                    {\n                        \"reactionmeddrapt\": \"DRUG ADMINISTRATION ERROR\"\n                    },\n                    {\n                        \"reactionmeddrapt\": \"OVERDOSE\"\n                    }\n                ],\n                \"drug\": [\n                    {\n                        \"drugcharacterization\": \"1\",\n                        \"medicinalproduct\": \"DURAGESIC-100\",\n                        \"drugauthorizationnumb\": \"019813\",\n                        \"drugadministrationroute\": \"041\",\n                        \"drugindication\": \"DRUG ABUSE\"\n                    }\n                ]\n            }\n        }\n    ]\n}"
+				}
+			]
+		},
+		{
+			"name": "Current & future weather forecast",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.expect(pm.response.code).to.eql(200);"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://api.open-meteo.com/v1/forecast?latitude=52.52&longitude=13.41&current_weather=true&hourly=temperature_2m,relativehumidity_2m,windspeed_10m",
+					"protocol": "https",
+					"host": [
+						"api",
+						"open-meteo",
+						"com"
+					],
+					"path": [
+						"v1",
+						"forecast"
+					],
+					"query": [
+						{
+							"key": "latitude",
+							"value": "52.52"
+						},
+						{
+							"key": "longitude",
+							"value": "13.41"
+						},
+						{
+							"key": "current_weather",
+							"value": "true"
+						},
+						{
+							"key": "hourly",
+							"value": "temperature_2m,relativehumidity_2m,windspeed_10m"
+						}
+					]
+				},
+				"description": "This request gets the current weather and future weather forecasts\n\nLink: [https://open-meteo.com/](https://open-meteo.com/)"
+			},
+			"response": [
+				{
+					"name": "Current & future weather forecast",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://api.open-meteo.com/v1/forecast?latitude=52.52&longitude=13.41&current_weather=true&hourly=temperature_2m,relativehumidity_2m,windspeed_10m",
+							"protocol": "https",
+							"host": [
+								"api",
+								"open-meteo",
+								"com"
+							],
+							"path": [
+								"v1",
+								"forecast"
+							],
+							"query": [
+								{
+									"key": "latitude",
+									"value": "52.52"
+								},
+								{
+									"key": "longitude",
+									"value": "13.41"
+								},
+								{
+									"key": "current_weather",
+									"value": "true"
+								},
+								{
+									"key": "hourly",
+									"value": "temperature_2m,relativehumidity_2m,windspeed_10m"
+								}
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Date",
+							"value": "Fri, 24 Feb 2023 14:53:21 GMT"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json; charset=utf-8"
+						},
+						{
+							"key": "Transfer-Encoding",
+							"value": "chunked"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						},
+						{
+							"key": "Content-Encoding",
+							"value": "deflate"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"latitude\": 52.52,\n    \"longitude\": 13.419998,\n    \"generationtime_ms\": 0.7309913635253906,\n    \"utc_offset_seconds\": 0,\n    \"timezone\": \"GMT\",\n    \"timezone_abbreviation\": \"GMT\",\n    \"elevation\": 38,\n    \"current_weather\": {\n        \"temperature\": 2.8,\n        \"windspeed\": 18.9,\n        \"winddirection\": 235,\n        \"weathercode\": 61,\n        \"time\": \"2023-02-24T14:00\"\n    },\n    \"hourly_units\": {\n        \"time\": \"iso8601\",\n        \"temperature_2m\": \"°C\",\n        \"relativehumidity_2m\": \"%\",\n        \"windspeed_10m\": \"km/h\"\n    },\n    \"hourly\": {\n        \"time\": [\n            \"2023-02-24T00:00\",\n            \"2023-02-24T01:00\",\n            \"2023-02-24T02:00\",\n            \"2023-02-24T03:00\",\n            \"2023-02-24T04:00\",\n            \"2023-02-24T05:00\",\n            \"2023-02-24T06:00\",\n            \"2023-02-24T07:00\",\n            \"2023-02-24T08:00\",\n            \"2023-02-24T09:00\",\n            \"2023-02-24T10:00\",\n            \"2023-02-24T11:00\",\n            \"2023-02-24T12:00\",\n            \"2023-02-24T13:00\",\n            \"2023-02-24T14:00\",\n            \"2023-02-24T15:00\",\n            \"2023-02-24T16:00\",\n            \"2023-02-24T17:00\",\n            \"2023-02-24T18:00\",\n            \"2023-02-24T19:00\",\n            \"2023-02-24T20:00\",\n            \"2023-02-24T21:00\",\n            \"2023-02-24T22:00\",\n            \"2023-02-24T23:00\",\n            \"2023-02-25T00:00\",\n            \"2023-02-25T01:00\",\n            \"2023-02-25T02:00\",\n            \"2023-02-25T03:00\",\n            \"2023-02-25T04:00\",\n            \"2023-02-25T05:00\",\n            \"2023-02-25T06:00\",\n            \"2023-02-25T07:00\",\n            \"2023-02-25T08:00\",\n            \"2023-02-25T09:00\",\n            \"2023-02-25T10:00\",\n            \"2023-02-25T11:00\",\n            \"2023-02-25T12:00\",\n            \"2023-02-25T13:00\",\n            \"2023-02-25T14:00\",\n            \"2023-02-25T15:00\",\n            \"2023-02-25T16:00\",\n            \"2023-02-25T17:00\",\n            \"2023-02-25T18:00\",\n            \"2023-02-25T19:00\",\n            \"2023-02-25T20:00\",\n            \"2023-02-25T21:00\",\n            \"2023-02-25T22:00\",\n            \"2023-02-25T23:00\",\n            \"2023-02-26T00:00\",\n            \"2023-02-26T01:00\",\n            \"2023-02-26T02:00\",\n            \"2023-02-26T03:00\",\n            \"2023-02-26T04:00\",\n            \"2023-02-26T05:00\",\n            \"2023-02-26T06:00\",\n            \"2023-02-26T07:00\",\n            \"2023-02-26T08:00\",\n            \"2023-02-26T09:00\",\n            \"2023-02-26T10:00\",\n            \"2023-02-26T11:00\",\n            \"2023-02-26T12:00\",\n            \"2023-02-26T13:00\",\n            \"2023-02-26T14:00\",\n            \"2023-02-26T15:00\",\n            \"2023-02-26T16:00\",\n            \"2023-02-26T17:00\",\n            \"2023-02-26T18:00\",\n            \"2023-02-26T19:00\",\n            \"2023-02-26T20:00\",\n            \"2023-02-26T21:00\",\n            \"2023-02-26T22:00\",\n            \"2023-02-26T23:00\",\n            \"2023-02-27T00:00\",\n            \"2023-02-27T01:00\",\n            \"2023-02-27T02:00\",\n            \"2023-02-27T03:00\",\n            \"2023-02-27T04:00\",\n            \"2023-02-27T05:00\",\n            \"2023-02-27T06:00\",\n            \"2023-02-27T07:00\",\n            \"2023-02-27T08:00\",\n            \"2023-02-27T09:00\",\n            \"2023-02-27T10:00\",\n            \"2023-02-27T11:00\",\n            \"2023-02-27T12:00\",\n            \"2023-02-27T13:00\",\n            \"2023-02-27T14:00\",\n            \"2023-02-27T15:00\",\n            \"2023-02-27T16:00\",\n            \"2023-02-27T17:00\",\n            \"2023-02-27T18:00\",\n            \"2023-02-27T19:00\",\n            \"2023-02-27T20:00\",\n            \"2023-02-27T21:00\",\n            \"2023-02-27T22:00\",\n            \"2023-02-27T23:00\",\n            \"2023-02-28T00:00\",\n            \"2023-02-28T01:00\",\n            \"2023-02-28T02:00\",\n            \"2023-02-28T03:00\",\n            \"2023-02-28T04:00\",\n            \"2023-02-28T05:00\",\n            \"2023-02-28T06:00\",\n            \"2023-02-28T07:00\",\n            \"2023-02-28T08:00\",\n            \"2023-02-28T09:00\",\n            \"2023-02-28T10:00\",\n            \"2023-02-28T11:00\",\n            \"2023-02-28T12:00\",\n            \"2023-02-28T13:00\",\n            \"2023-02-28T14:00\",\n            \"2023-02-28T15:00\",\n            \"2023-02-28T16:00\",\n            \"2023-02-28T17:00\",\n            \"2023-02-28T18:00\",\n            \"2023-02-28T19:00\",\n            \"2023-02-28T20:00\",\n            \"2023-02-28T21:00\",\n            \"2023-02-28T22:00\",\n            \"2023-02-28T23:00\",\n            \"2023-03-01T00:00\",\n            \"2023-03-01T01:00\",\n            \"2023-03-01T02:00\",\n            \"2023-03-01T03:00\",\n            \"2023-03-01T04:00\",\n            \"2023-03-01T05:00\",\n            \"2023-03-01T06:00\",\n            \"2023-03-01T07:00\",\n            \"2023-03-01T08:00\",\n            \"2023-03-01T09:00\",\n            \"2023-03-01T10:00\",\n            \"2023-03-01T11:00\",\n            \"2023-03-01T12:00\",\n            \"2023-03-01T13:00\",\n            \"2023-03-01T14:00\",\n            \"2023-03-01T15:00\",\n            \"2023-03-01T16:00\",\n            \"2023-03-01T17:00\",\n            \"2023-03-01T18:00\",\n            \"2023-03-01T19:00\",\n            \"2023-03-01T20:00\",\n            \"2023-03-01T21:00\",\n            \"2023-03-01T22:00\",\n            \"2023-03-01T23:00\",\n            \"2023-03-02T00:00\",\n            \"2023-03-02T01:00\",\n            \"2023-03-02T02:00\",\n            \"2023-03-02T03:00\",\n            \"2023-03-02T04:00\",\n            \"2023-03-02T05:00\",\n            \"2023-03-02T06:00\",\n            \"2023-03-02T07:00\",\n            \"2023-03-02T08:00\",\n            \"2023-03-02T09:00\",\n            \"2023-03-02T10:00\",\n            \"2023-03-02T11:00\",\n            \"2023-03-02T12:00\",\n            \"2023-03-02T13:00\",\n            \"2023-03-02T14:00\",\n            \"2023-03-02T15:00\",\n            \"2023-03-02T16:00\",\n            \"2023-03-02T17:00\",\n            \"2023-03-02T18:00\",\n            \"2023-03-02T19:00\",\n            \"2023-03-02T20:00\",\n            \"2023-03-02T21:00\",\n            \"2023-03-02T22:00\",\n            \"2023-03-02T23:00\"\n        ],\n        \"temperature_2m\": [\n            6.4,\n            6.1,\n            4.4,\n            3.8,\n            3.2,\n            2.7,\n            3,\n            3,\n            3.3,\n            3.8,\n            4.5,\n            4.8,\n            3.1,\n            2.7,\n            2.8,\n            2.6,\n            2.5,\n            2.3,\n            2.4,\n            2.5,\n            2.8,\n            3,\n            3,\n            3.1,\n            3.3,\n            2.9,\n            2.6,\n            2.2,\n            1.9,\n            1.9,\n            1.5,\n            1.4,\n            1.5,\n            1.7,\n            1.9,\n            2,\n            2,\n            1.6,\n            1.3,\n            1.4,\n            1.1,\n            0,\n            0,\n            -0.1,\n            -0.2,\n            -0.3,\n            -0.5,\n            -0.7,\n            -0.5,\n            -0.3,\n            -0.5,\n            -0.7,\n            -0.6,\n            -0.7,\n            -0.8,\n            -0.9,\n            -0.5,\n            0.6,\n            1.4,\n            2,\n            2.7,\n            3.4,\n            3.5,\n            3,\n            2.1,\n            1.3,\n            0.7,\n            0.4,\n            0.2,\n            0.1,\n            0,\n            -0.3,\n            -0.5,\n            -0.5,\n            -0.5,\n            -0.5,\n            -0.4,\n            -0.3,\n            -0.3,\n            -0.4,\n            0.2,\n            1.3,\n            2.2,\n            2.7,\n            3.5,\n            3.8,\n            4,\n            3.8,\n            3.3,\n            2.5,\n            1.5,\n            1.1,\n            0.8,\n            0.5,\n            0.2,\n            -0.1,\n            -0.4,\n            -0.6,\n            -0.8,\n            -1,\n            -1.3,\n            -1.7,\n            -1.9,\n            -1.7,\n            -1.4,\n            -0.6,\n            0.3,\n            1.4,\n            2.7,\n            3.3,\n            3.8,\n            3.9,\n            3.2,\n            2.2,\n            1,\n            0.5,\n            0.2,\n            -0.1,\n            -0.3,\n            -0.4,\n            -0.6,\n            -0.7,\n            -0.9,\n            -1.1,\n            -1.3,\n            -1.5,\n            -1.7,\n            -0.9,\n            -0.2,\n            1,\n            2.1,\n            3.4,\n            4.7,\n            5.1,\n            5.3,\n            5.1,\n            4.7,\n            3.9,\n            3,\n            2.6,\n            2.3,\n            1.9,\n            1.5,\n            1.1,\n            0.7,\n            0.5,\n            0.3,\n            0.2,\n            0,\n            -0.3,\n            -0.3,\n            0,\n            0.5,\n            1.4,\n            2.5,\n            3.8,\n            5.2,\n            5.8,\n            6.1,\n            6.2,\n            5.7,\n            5,\n            3.9,\n            3.1,\n            2.4,\n            1.6,\n            1.2,\n            1\n        ],\n        \"relativehumidity_2m\": [\n            89,\n            84,\n            68,\n            77,\n            76,\n            80,\n            79,\n            81,\n            77,\n            65,\n            60,\n            58,\n            84,\n            84,\n            80,\n            84,\n            86,\n            88,\n            89,\n            89,\n            88,\n            88,\n            88,\n            88,\n            84,\n            85,\n            86,\n            87,\n            89,\n            88,\n            91,\n            91,\n            88,\n            86,\n            81,\n            80,\n            80,\n            79,\n            81,\n            76,\n            74,\n            86,\n            86,\n            83,\n            82,\n            82,\n            83,\n            88,\n            87,\n            86,\n            86,\n            86,\n            85,\n            84,\n            85,\n            85,\n            82,\n            77,\n            67,\n            61,\n            56,\n            53,\n            52,\n            56,\n            55,\n            62,\n            63,\n            66,\n            69,\n            74,\n            77,\n            82,\n            85,\n            84,\n            83,\n            84,\n            84,\n            84,\n            85,\n            86,\n            84,\n            79,\n            69,\n            66,\n            60,\n            56,\n            53,\n            52,\n            56,\n            63,\n            71,\n            74,\n            75,\n            76,\n            77,\n            78,\n            79,\n            79,\n            80,\n            80,\n            81,\n            82,\n            82,\n            80,\n            78,\n            73,\n            68,\n            62,\n            54,\n            48,\n            43,\n            40,\n            45,\n            53,\n            64,\n            69,\n            72,\n            76,\n            78,\n            80,\n            80,\n            78,\n            76,\n            73,\n            74,\n            75,\n            77,\n            86,\n            84,\n            80,\n            76,\n            71,\n            65,\n            63,\n            61,\n            62,\n            66,\n            71,\n            78,\n            81,\n            83,\n            85,\n            87,\n            88,\n            90,\n            92,\n            93,\n            95,\n            96,\n            96,\n            95,\n            93,\n            90,\n            85,\n            79,\n            73,\n            66,\n            64,\n            63,\n            64,\n            67,\n            72,\n            78,\n            81,\n            83,\n            85,\n            86,\n            87\n        ],\n        \"windspeed_10m\": [\n            13.2,\n            14,\n            14.4,\n            13.9,\n            12.1,\n            8.3,\n            9.9,\n            11.3,\n            11.8,\n            14.2,\n            19,\n            18.6,\n            20.2,\n            17.4,\n            18.9,\n            18.4,\n            14.3,\n            15.8,\n            14.7,\n            13.7,\n            13.7,\n            16.6,\n            16.2,\n            16.5,\n            17.3,\n            17.3,\n            19.1,\n            21.3,\n            19.1,\n            17.5,\n            16.2,\n            15.8,\n            19.9,\n            16.6,\n            16.9,\n            16.9,\n            16.5,\n            17.7,\n            15.1,\n            14.3,\n            15.8,\n            13.4,\n            13.1,\n            13.1,\n            13,\n            12.4,\n            12.6,\n            11.2,\n            10.8,\n            10.5,\n            10.4,\n            10,\n            10.1,\n            10.4,\n            9.6,\n            8.5,\n            10.3,\n            11.5,\n            14.4,\n            13,\n            12.5,\n            14.5,\n            14.8,\n            14.8,\n            13,\n            9.8,\n            9,\n            6.1,\n            7.3,\n            7.9,\n            7.9,\n            5.8,\n            5.1,\n            5.9,\n            7.3,\n            6.8,\n            6.5,\n            6.9,\n            6.4,\n            6.8,\n            7.1,\n            8.3,\n            12.3,\n            12.5,\n            12.1,\n            13,\n            14.1,\n            14.1,\n            12.7,\n            10.2,\n            7.9,\n            7.4,\n            7.7,\n            7.9,\n            7.7,\n            7.4,\n            7.1,\n            7.1,\n            7.1,\n            7.1,\n            7.1,\n            7.3,\n            7.3,\n            7.6,\n            8.1,\n            8.7,\n            9.2,\n            9.2,\n            9.7,\n            10,\n            10.8,\n            10.8,\n            10.2,\n            8.8,\n            7.4,\n            6.7,\n            6.4,\n            6,\n            6,\n            5.7,\n            5.8,\n            6,\n            5.6,\n            5.8,\n            5.8,\n            5.3,\n            5.2,\n            4.4,\n            5,\n            6.3,\n            7.9,\n            9.5,\n            11.6,\n            11.9,\n            11.9,\n            11.3,\n            9.9,\n            8.6,\n            6.8,\n            6.7,\n            7,\n            7.6,\n            7.6,\n            7.6,\n            7.6,\n            7.6,\n            7.6,\n            7.6,\n            7.3,\n            7.4,\n            7.1,\n            7.3,\n            7.6,\n            7.9,\n            7.9,\n            8.3,\n            7.9,\n            7.6,\n            6.9,\n            6.2,\n            5.3,\n            4.6,\n            3.6,\n            3.2,\n            2.7,\n            2.2,\n            2.2,\n            2.6\n        ]\n    }\n}"
+				}
+			]
+		},
+		{
+			"name": "Available art objects",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.expect(pm.response.code).to.eql(200);"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://collectionapi.metmuseum.org/public/collection/v1/search?q=sunflowers",
+					"protocol": "https",
+					"host": [
+						"collectionapi",
+						"metmuseum",
+						"org"
+					],
+					"path": [
+						"public",
+						"collection",
+						"v1",
+						"search"
+					],
+					"query": [
+						{
+							"key": "q",
+							"value": "sunflowers"
+						}
+					]
+				},
+				"description": "This request returns a listing of all Object IDs for objects that contain the search query within the object’s data\n\nLink: [https://metmuseum.github.io/#search](https://metmuseum.github.io/#search)"
+			},
+			"response": [
+				{
+					"name": "Available art objects",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://collectionapi.metmuseum.org/public/collection/v1/search?q=sunflowers",
+							"protocol": "https",
+							"host": [
+								"collectionapi",
+								"metmuseum",
+								"org"
+							],
+							"path": [
+								"public",
+								"collection",
+								"v1",
+								"search"
+							],
+							"query": [
+								{
+									"key": "q",
+									"value": "sunflowers"
+								}
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json; charset=UTF-8"
+						},
+						{
+							"key": "Vary",
+							"value": "Origin"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "*"
+						},
+						{
+							"key": "X-Powered-By",
+							"value": "ARR/3.0"
+						},
+						{
+							"key": "Date",
+							"value": "Fri, 24 Feb 2023 14:53:54 GMT"
+						},
+						{
+							"key": "Set-Cookie",
+							"value": "incap_ses_490_1662004=nt0GNpL6rkSanQL1ONXMBoTP+GMAAAAAktw72TyGWoG7oe+pKRrJ/g==; path=/; Domain=.metmuseum.org"
+						},
+						{
+							"key": "X-CDN",
+							"value": "Imperva"
+						},
+						{
+							"key": "Content-Encoding",
+							"value": "gzip"
+						},
+						{
+							"key": "Transfer-Encoding",
+							"value": "chunked"
+						},
+						{
+							"key": "X-Iinfo",
+							"value": "3-23009333-23009338 NNYY CT(5 14 0) RT(1677250436034 13) q(0 0 0 1) r(0 0) U12"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"total\": 89,\n    \"objectIDs\": [\n        436524,\n        484935,\n        437112,\n        210191,\n        431264,\n        397949,\n        656530,\n        480725,\n        486590,\n        485308,\n        375281,\n        705155,\n        11922,\n        2032,\n        343052,\n        20141,\n        347980,\n        2019,\n        208554,\n        403496,\n        360837,\n        437115,\n        207869,\n        400581,\n        423400,\n        707887,\n        223828,\n        682927,\n        57922,\n        649813,\n        79739,\n        193938,\n        339347,\n        208218,\n        437984,\n        202228,\n        436534,\n        761604,\n        437329,\n        436252,\n        363282,\n        207753,\n        822570,\n        816522,\n        487043,\n        436580,\n        437526,\n        203893,\n        367434,\n        190739,\n        423237,\n        262423,\n        839296,\n        367817,\n        822590,\n        822589,\n        13644,\n        18362,\n        820022,\n        648617,\n        761731,\n        814626,\n        892559,\n        207967,\n        626832,\n        262430,\n        262428,\n        841928,\n        707697,\n        205386,\n        262378,\n        426804,\n        633526,\n        369073,\n        747779,\n        852414,\n        427872,\n        895564,\n        436530,\n        436535,\n        436121,\n        436529,\n        724844,\n        436144,\n        437980,\n        631808,\n        834580,\n        834585,\n        834765\n    ]\n}"
+				}
+			]
+		}
+	]
+}
