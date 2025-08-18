@@ -7,7 +7,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model __Bootstrap {
+model Bootstrap {
   id        Int      @id @default(autoincrement())
   createdAt DateTime @default(now())
 }

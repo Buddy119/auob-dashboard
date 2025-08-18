@@ -6,7 +6,6 @@ import { ConfigService } from '@nestjs/config';
 import { createLogger } from './common/logging/logger';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { LoggerService } from '@nestjs/common';
 
 async function bootstrap() {
   const adapter = new FastifyAdapter({ logger: false });
@@ -20,7 +19,7 @@ async function bootstrap() {
 
   // Logger
   const logger = createLogger(nodeEnv);
-  app.useLogger(logger as unknown as LoggerService);
+  app.useLogger(logger);
 
   // CORS
   app.enableCors({ origin: true, credentials: true });
@@ -38,6 +37,6 @@ async function bootstrap() {
   SwaggerModule.setup('docs', app, doc);
 
   await app.listen(port, '0.0.0.0');
-  logger.info({ port, nodeEnv }, 'Server started');
+  logger.log({ port, nodeEnv }, 'Server started');
 }
 bootstrap();
