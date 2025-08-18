@@ -7,7 +7,176 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Bootstrap {
-  id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now())
+// ===================== Enums =====================
+
+enum RunStatus {
+  queued
+  running
+  success
+  partial
+  fail
+  timeout
+  cancelled
+  error
+}
+
+enum HealthStatus {
+  UNKNOWN
+  HEALTHY
+  DEGRADED
+  UNHEALTHY
+}
+
+enum RunTrigger {
+  manual
+  schedule
+  api
+}
+
+enum StepStatus {
+  success
+  fail
+  timeout
+  skipped
+}
+
+enum AssertionStatus {
+  pass
+  fail
+  skipped
+}
+
+enum HttpMethod {
+  GET
+  POST
+  PUT
+  PATCH
+  DELETE
+  HEAD
+  OPTIONS
+  TRACE
+}
+
+// ===================== Models =====================
+
+model Collection {
+  id          String               @id @default(cuid())
+  name        String
+  version     String?              // postman schema version if available
+  fileUri     String               // where the original collection.json is stored (e.g., S3/MinIO URI or file path)
+  description String?
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+
+  // relations
+  envs        CollectionEnv[]
+  requests    CollectionRequest[]
+  runs        Run[]
+
+  @@index([createdAt])
+  @@map("collections")
+}
+
+model CollectionEnv {
+  id           String     @id @default(cuid())
+  collectionId String
+  name         String
+  fileUri      String
+  isDefault    Boolean    @default(false)
+  createdAt    DateTime   @default(now())
+
+  // relations
+  collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  runs         Run[]      // runs that used this environment
+
+  @@unique([collectionId, name])
+  @@map("collection_envs")
+}
+
+model CollectionRequest {
+  id           String     @id @default(cuid())
+  collectionId String
+  name         String
+  method       HttpMethod
+  url          String
+  path         String      // folder hierarchy path like "Users/GET users"
+  isCritical   Boolean     @default(false)
+  createdAt    DateTime    @default(now())
+
+  // relations
+  collection   Collection  @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  steps        RunStep[]
+
+  @@unique([collectionId, path]) // stable reference inside a collection
+  @@index([collectionId, method])
+  @@map("collection_requests")
+}
+
+model Run {
+  id               String        @id @default(cuid())
+  collectionId     String
+  environmentId    String?       // which env was used (if any)
+  trigger          RunTrigger    @default(manual)
+  status           RunStatus     @default(queued)
+  startedAt        DateTime?
+  endedAt          DateTime?
+  durationMs       Int?
+  totalRequests    Int           @default(0)
+  successRequests  Int           @default(0)
+  failedRequests   Int           @default(0)
+  p50Ms            Int?
+  p95Ms            Int?
+  p99Ms            Int?
+  reportUri        String?
+  health           HealthStatus  @default(UNKNOWN)
+  errorMsg         String?
+  createdAt        DateTime      @default(now())
+
+  // relations
+  collection       Collection    @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  environment      CollectionEnv @relation(fields: [environmentId], references: [id], onDelete: SetNull)
+  steps            RunStep[]
+
+  @@index([collectionId, createdAt])
+  @@index([status])
+  @@map("runs")
+}
+
+model RunStep {
+  id            String          @id @default(cuid())
+  runId         String
+  requestId     String?
+  orderIndex    Int              // sequence within the run
+  name          String
+  status        StepStatus
+  httpStatus    Int?
+  latencyMs     Int?
+  retries       Int              @default(0)
+  responseSize  Int?             // bytes
+  errorMsg      String?
+  startedAt     DateTime?        // optional timestamps for granular timing
+  endedAt       DateTime?
+
+  // relations
+  run           Run              @relation(fields: [runId], references: [id], onDelete: Cascade)
+  request       CollectionRequest? @relation(fields: [requestId], references: [id], onDelete: SetNull)
+  assertions    RunAssertion[]
+
+  @@index([runId, orderIndex])
+  @@index([requestId])
+  @@map("run_steps")
+}
+
+model RunAssertion {
+  id         String          @id @default(cuid())
+  runStepId  String
+  name       String
+  status     AssertionStatus
+  errorMsg   String?
+
+  // relations
+  step       RunStep         @relation(fields: [runStepId], references: [id], onDelete: Cascade)
+
+  @@index([runStepId])
+  @@map("run_assertions")
 }
