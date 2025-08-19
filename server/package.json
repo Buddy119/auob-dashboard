@@ -16,7 +16,7 @@
     "prisma:studio": "prisma studio"
   },
   "dependencies": {
-    "@fastify/multipart": "^9.0.3",
+    "@fastify/multipart": "^8.0.0",
     "@fastify/static": "^6.12.0",
     "@nestjs/common": "^10.0.0",
     "@nestjs/config": "^3.1.1",
