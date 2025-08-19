@@ -1,7 +1,8 @@
 import { IStorage, PutParams } from './storage.interface';
 import { Injectable } from '@nestjs/common';
 import { createWriteStream } from 'fs';
-import path from 'path';
+// import path from 'path';
+import * as path from 'path';
 import fs from 'fs-extra';
 import { Readable } from 'stream';
 

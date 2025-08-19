@@ -3,7 +3,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { STORAGE } from '../storage/storage.tokens';
 import { IStorage } from '../storage/storage.interface';
 import { Inject } from '@nestjs/common';
-import { nanoid } from 'nanoid';
+// import { nanoid } from 'nanoid';
 import { PostmanCollectionZ, extractCollectionMeta, PostmanEnvZ } from './postman.z';
 
 type UploadPayload = {
@@ -21,6 +21,7 @@ export class CollectionsService {
   ) {}
 
   async upload({ collectionBuffer, collectionContentType, envBuffer, envContentType }: UploadPayload) {
+    const { nanoid } = await import('nanoid');
     // Content-type & size checks
     if (!collectionBuffer?.length) throw new BadRequestException('collection file required');
     if (collectionContentType && !collectionContentType.includes('json')) {
