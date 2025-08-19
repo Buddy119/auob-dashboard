@@ -6,11 +6,17 @@ import { ConfigService } from '@nestjs/config';
 import { createLogger } from './common/logging/logger';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import multipart from '@fastify/multipart';
 
 async function bootstrap() {
   const adapter = new FastifyAdapter({ logger: false });
   const app = await NestFactory.create<NestFastifyApplication>(AppModule, adapter, {
     bufferLogs: true,
+  });
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  await app.register(multipart as any, {
+    limits: { fileSize: Number(process.env.MAX_UPLOAD_MB ?? 10) * 1024 * 1024 },
   });
 
   const config = app.get(ConfigService);
