@@ -4,7 +4,9 @@ import { STORAGE } from '../storage/storage.tokens';
 import { IStorage } from '../storage/storage.interface';
 import { Inject } from '@nestjs/common';
 import { nanoid } from 'nanoid';
+import * as fs from 'fs-extra';
 import { PostmanCollectionZ, extractCollectionMeta, PostmanEnvZ } from './postman.z';
+import { parseCollectionRequests } from './postman-parser';
 
 type UploadPayload = {
   collectionBuffer: Buffer;
@@ -19,6 +21,53 @@ export class CollectionsService {
     private readonly prisma: PrismaService,
     @Inject(STORAGE) private readonly storage: IStorage,
   ) {}
+
+  /** Reads the persisted collection file and indexes its requests. */
+  async indexRequests(collectionId: string, replace = false) {
+    const col = await this.prisma.collection.findUnique({ where: { id: collectionId } });
+    if (!col) throw new BadRequestException('collection not found');
+
+    const p = this.storage.getPathFromUri(col.fileUri);
+    const buf = await fs.readFile(p);
+    let json: any;
+    try {
+      json = JSON.parse(buf.toString('utf8'));
+    } catch {
+      throw new BadRequestException('stored collection is not valid JSON');
+    }
+
+    const parsed = parseCollectionRequests(json);
+    if (!parsed.length) {
+      if (replace) {
+        await this.prisma.collectionRequest.deleteMany({ where: { collectionId } });
+      }
+      return { inserted: 0 };
+    }
+
+    const rows = parsed.map(pr => ({
+      id: undefined,
+      collectionId,
+      name: pr.name,
+      method: pr.method,
+      url: pr.url,
+      path: pr.path,
+      isCritical: false,
+    }));
+
+    await this.prisma.$transaction(async (tx) => {
+      if (replace) {
+        await tx.collectionRequest.deleteMany({ where: { collectionId } });
+      }
+      const chunk = 500;
+      for (let i = 0; i < rows.length; i += chunk) {
+        await tx.collectionRequest.createMany({
+          data: rows.slice(i, i + chunk),
+        });
+      }
+    });
+
+    return { inserted: rows.length };
+  }
 
   async upload({ collectionBuffer, collectionContentType, envBuffer, envContentType }: UploadPayload) {
     // Content-type & size checks
@@ -94,6 +143,8 @@ export class CollectionsService {
       select: { id: true },
     });
 
+    await this.indexRequests(created.id, true);
+
     return { collectionId: created.id };
   }
 
@@ -121,7 +172,7 @@ export class CollectionsService {
     return { total, items, limit, offset };
   }
 
-  async get(id: string) {
+  async get(id: string, withRequests = false, max = 500) {
     const col = await this.prisma.collection.findUnique({
       where: { id },
       select: {
@@ -145,6 +196,16 @@ export class CollectionsService {
       },
     });
     if (!col) throw new BadRequestException('collection not found');
-    return col;
+
+    if (!withRequests) return col;
+
+    const requests = await this.prisma.collectionRequest.findMany({
+      where: { collectionId: id },
+      orderBy: [{ path: 'asc' }],
+      take: Math.min(max, 2000),
+      select: { id: true, name: true, method: true, url: true, path: true, isCritical: true },
+    });
+
+    return { ...col, requests };
   }
 }
