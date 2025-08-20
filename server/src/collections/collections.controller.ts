@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Req, Query } from '@nestjs/common';
+import { Controller, Get, Post, Req, Query, Param, DefaultValuePipe, ParseBoolPipe } from '@nestjs/common';
 import { CollectionsService } from './collections.service';
 import { FastifyRequest } from 'fastify';
 import { ListCollectionsQueryDto } from './dto/list-collections.dto';
@@ -56,8 +56,21 @@ export class CollectionsController {
   }
 
   @Get(':id')
-  async get(@Req() req: FastifyRequest) {
-    const id = (req.params as { id: string }).id;
-    return this.svc.get(id);
+  async get(
+    @Req() req: FastifyRequest,
+    @Query('withRequests', new DefaultValuePipe(false), ParseBoolPipe) withRequests: boolean,
+    @Query('maxRequests') maxRequests?: string,
+  ) {
+    const id = (req.params as any).id;
+    const max = maxRequests ? Math.max(1, Math.min(2000, parseInt(maxRequests, 10))) : 500;
+    return this.svc.get(id, withRequests, max);
+  }
+
+  @Post(':id/reindex')
+  async reindex(
+    @Param('id') id: string,
+    @Query('replace', new DefaultValuePipe(true), ParseBoolPipe) replace: boolean
+  ) {
+    return this.svc.indexRequests(id, replace);
   }
 }
