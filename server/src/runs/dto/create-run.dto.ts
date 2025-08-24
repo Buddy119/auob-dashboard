@@ -16,4 +16,8 @@ export class CreateRunDto {
 
   @IsOptional() @IsBoolean()
   insecure?: boolean;
+
+  // run-level max duration
+  @IsOptional() @IsInt() @Min(1)
+  maxDurationMs?: number;
 }

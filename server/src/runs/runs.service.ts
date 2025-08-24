@@ -2,6 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateRunDto } from './dto/create-run.dto';
 import { RunsExecutor } from './runs.executor';
+import { RunStatus } from '../prisma/enums';
 
 @Injectable()
 export class RunsService {
@@ -15,7 +16,7 @@ export class RunsService {
       data: {
         collectionId,
         environmentId: dto.environmentId ?? null,
-        status: 'queued',
+        status: RunStatus.queued,
       },
       select: { id: true },
     });
@@ -25,6 +26,7 @@ export class RunsService {
       delayRequestMs: dto.delayRequestMs,
       bail: dto.bail,
       insecure: dto.insecure,
+      maxDurationMs: dto.maxDurationMs,
     });
     return { runId: run.id };
   }
@@ -63,8 +65,26 @@ export class RunsService {
     return this.prisma.runStep.findMany({
       where: { runId },
       orderBy: { orderIndex: 'asc' },
-      select: { id: true, name: true, status: true, httpStatus: true, latencyMs: true, responseSize: true, orderIndex: true }
+      select: {
+        id: true,
+        name: true,
+        status: true,
+        httpStatus: true,
+        latencyMs: true,
+        responseSize: true,
+        orderIndex: true,
+        requestId: true,
+        request: { select: { path: true } },
+      },
     });
+  }
+
+  async cancel(runId: string) {
+    const run = await this.prisma.run.findUnique({ where: { id: runId } });
+    if (!run) throw new BadRequestException('run not found');
+    const res = await this.executor.cancel(runId);
+    if (!res.ok) throw new BadRequestException('run not cancellable');
+    return { status: 'cancel_requested', mode: res.mode };
   }
 
   async listAssertions(runId: string, stepId?: string) {

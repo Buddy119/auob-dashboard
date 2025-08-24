@@ -1,21 +1,32 @@
 import { Injectable, Inject } from '@nestjs/common';
 import newman from 'newman';
 import fs from 'fs-extra';
+import { randomUUID } from 'node:crypto';
 import { PrismaService } from '../prisma/prisma.service';
 import { EventsService } from '../realtime/events.service';
+import { HealthStatus, RunStatus, StepStatus } from '../prisma/enums';
 import { IStorage } from '../storage/storage.interface';
 import { STORAGE } from '../storage/storage.tokens';
-import { randomUUID } from 'node:crypto';
 
 type RunnerOpts = {
   timeoutRequestMs?: number;
   delayRequestMs?: number;
   bail?: boolean;
   insecure?: boolean;
+  maxDurationMs?: number;
+};
+
+type ActiveRun = {
+  emitter: any;
+  reason: 'cancel' | 'timeout' | null;
+  timer?: NodeJS.Timeout;
+  collectionId: string;
 };
 
 @Injectable()
 export class NewmanRunner {
+  private active = new Map<string, ActiveRun>();
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly events: EventsService,
@@ -31,13 +42,61 @@ export class NewmanRunner {
 
   private p(vals: number[]) {
     if (!vals.length) return { p50: 0, p95: 0, p99: 0 };
-    const s = [...vals].sort((a,b)=>a-b);
-    const at = (p: number) => s[Math.min(s.length - 1, Math.floor((p/100) * (s.length - 1)))];
+    const s = [...vals].sort((a, b) => a - b);
+    const at = (p: number) =>
+      s[Math.min(s.length - 1, Math.floor((p / 100) * (s.length - 1)))];
     return { p50: at(50), p95: at(95), p99: at(99) };
   }
 
+  // Compute "Folder1/Folder2/Request Name" (exclude collection root)
+  private computePathFromItem(item: any): string {
+    const reqName = item?.name ?? 'unnamed';
+    const folders: string[] = [];
+    let parent = item?.parent && item.parent ? item.parent() : null;
+    // stop before collection root: parent.parent() exists for folders, null/undefined for root
+    while (parent && typeof parent.parent === 'function' && parent.parent()) {
+      if (typeof parent.name === 'string') folders.unshift(parent.name);
+      parent = parent.parent();
+    }
+    return [...folders, reqName].join('/');
+  }
+
+  private async mapRequestId(collectionId: string, item: any): Promise<string | null> {
+    const path = this.computePathFromItem(item);
+    if (path) {
+      const byPath = await this.prisma.collectionRequest.findFirst({
+        where: { collectionId, path },
+        select: { id: true },
+      });
+      if (byPath?.id) return byPath.id;
+    }
+    const name = item?.name;
+    if (name) {
+      const byName = await this.prisma.collectionRequest.findFirst({
+        where: { collectionId, name },
+        select: { id: true },
+      });
+      if (byName?.id) return byName.id;
+    }
+    return null;
+  }
+
+  // Public cancel
+  cancel(runId: string, reason: 'cancel' | 'timeout' = 'cancel') {
+    const entry = this.active.get(runId);
+    if (!entry) return false;
+    entry.reason = reason;
+    if (entry.timer) {
+      clearTimeout(entry.timer);
+      entry.timer = undefined;
+    }
+    try {
+      entry.emitter?.abort?.();
+    } catch {}
+    return true;
+  }
+
   async run(runId: string, opts: RunnerOpts = {}) {
-    // Get run + collection + (optional) env
     const runRow = await this.prisma.run.findUnique({ where: { id: runId } });
     if (!runRow) throw new Error('run not found');
 
@@ -51,125 +110,150 @@ export class NewmanRunner {
     const collectionJson = await this.loadJsonFromUri(collection.fileUri);
     const envJson = await this.loadJsonFromUri(env?.fileUri ?? null);
 
-    // Update run: running
     const startedAt = new Date();
     await this.prisma.run.update({
       where: { id: runId },
-      data: { status: 'running', startedAt },
+      data: { status: RunStatus.running, startedAt },
     });
     this.events.publish({ type: 'run_started', runId });
 
-    // Metrics
     const latencies: number[] = [];
-    let total = 0, failed = 0, success = 0;
-
-    // Keep last created stepId for assertion mapping
+    let total = 0;
+    let failed = 0;
     let lastStepId: string | null = null;
-
-    // Prepare a temporary report (we store summary to storage later)
-    let runSummary: any = null;
+    let lastStepPromise: Promise<any> | null = null;
+    const pending: Promise<any>[] = [];
 
     await new Promise<void>((resolve, reject) => {
-      newman.run(
+      const emitter = newman.run(
         {
           collection: collectionJson,
           environment: envJson ?? undefined,
-          reporters: [], // we'll store our own summary
+          reporters: [],
           timeoutRequest: opts.timeoutRequestMs,
           delayRequest: opts.delayRequestMs,
           bail: opts.bail ? { folder: true } : undefined,
           insecure: !!opts.insecure,
         },
         (err, summary) => {
-          runSummary = summary;
-          if (err) reject(err);
-        }
-      )
-      // request completes -> create RunStep
-      .on('request', async (_err: any, args: any) => {
-        try {
-          const code = args?.response?.code ?? 0;
-          const rt = args?.response?.responseTime ?? null;
-          const rsize =
-            (args?.response?.stream && args.response.stream.length) ??
-            args?.response?.responseSize ?? null;
+          // let 'done' handler finalize
+        },
+      );
 
-          const name = args?.item?.name ?? 'unnamed';
-          const stepId = randomUUID();
-          lastStepId = stepId;
-          // Step defaults to success; assertions may downgrade it later
-          const step = await this.prisma.runStep.create({
-            data: {
-              id: stepId,
-              runId,
-              name,
-              orderIndex: total,
-              status: 'success',
-              httpStatus: code || null,
-              latencyMs: typeof rt === 'number' ? rt : null,
-              responseSize: typeof rsize === 'number' ? rsize : null,
-              startedAt: new Date(),
-              endedAt: new Date(),
-            },
-            select: { id: true, name: true, httpStatus: true, latencyMs: true, status: true }
-          });
-          total += 1;
-          if (typeof rt === 'number') latencies.push(rt);
+      const entry: ActiveRun = { emitter, reason: null, collectionId: runRow.collectionId };
+      if (opts.maxDurationMs) {
+        entry.timer = setTimeout(() => this.cancel(runId, 'timeout'), opts.maxDurationMs);
+      }
+      this.active.set(runId, entry);
 
-          this.events.publish({ type: 'step_progress', runId, step });
-        } catch (e) {
-          // swallow to keep run going; will be reflected in final status
-        }
-      })
-      // assertion per test
-      .on('assertion', async (err: any, args: any) => {
-        if (!lastStepId) return;
-        try {
-          await this.prisma.runAssertion.create({
-            data: {
-              runStepId: lastStepId,
-              name: args?.assertion ?? 'assertion',
-              status: err ? 'fail' : 'pass',
-              errorMsg: err?.message ?? null,
-            },
-          });
+      emitter.on('request', (_err: any, args: any) => {
+        const stepId = randomUUID();
+        lastStepId = stepId;
+        const p = (async () => {
+          try {
+            const requestId = await this.mapRequestId(runRow.collectionId, args?.item);
+            const code = args?.response?.code ?? null;
+            const rt = typeof args?.response?.responseTime === 'number' ? args.response.responseTime : null;
+            const rsize =
+              (args?.response?.stream && args.response.stream.length) ??
+              args?.response?.responseSize ??
+              null;
+            const name = args?.item?.name ?? 'unnamed';
 
-          // If assertion failed, mark step as failed
-          if (err) {
-            await this.prisma.runStep.update({
-              where: { id: lastStepId },
-              data: { status: 'fail' },
+            const step = await this.prisma.runStep.create({
+              data: {
+                id: stepId,
+                runId,
+                requestId,
+                name,
+                orderIndex: total,
+                status: StepStatus.success,
+                httpStatus: code,
+                latencyMs: rt,
+                responseSize: typeof rsize === 'number' ? rsize : null,
+                startedAt: new Date(),
+                endedAt: new Date(),
+              },
+              select: { id: true, name: true, httpStatus: true, latencyMs: true, status: true, requestId: true },
             });
-          }
 
-          this.events.publish({
-            type: 'assertion_result',
-            runId,
-            stepId: lastStepId,
-            assertion: { name: args?.assertion, status: err ? 'fail' : 'pass' }
-          });
-        } catch { /* no-op */ }
-      })
-      .on('done', async (err: any, summary: any) => {
+            total += 1;
+            if (typeof rt === 'number') latencies.push(rt);
+
+            this.events.publish({ type: 'step_progress', runId, step });
+          } catch {
+            // no-op
+          }
+        })();
+        lastStepPromise = p;
+        pending.push(p);
+      });
+
+      emitter.on('assertion', (err: any, args: any) => {
+        const p = (async () => {
+          if (!lastStepId) return;
+          if (lastStepPromise) {
+            try { await lastStepPromise; } catch {}
+          }
+          try {
+            await this.prisma.runAssertion.create({
+              data: {
+                runStepId: lastStepId,
+                name: args?.assertion ?? 'assertion',
+                status: err ? 'fail' : 'pass',
+                errorMsg: err?.message ?? null,
+              },
+            });
+            if (err) {
+              await this.prisma.runStep.update({ where: { id: lastStepId }, data: { status: StepStatus.fail } });
+            }
+            this.events.publish({
+              type: 'assertion_result',
+              runId,
+              stepId: lastStepId,
+              assertion: { name: args?.assertion, status: err ? 'fail' : 'pass' },
+            });
+          } catch {
+            /* no-op */
+          }
+        })();
+        pending.push(p);
+      });
+
+      emitter.on('done', async (_err: any, summary: any) => {
         try {
-          // Tally success/failed from steps in DB
+          await Promise.allSettled(pending);
+          const active = this.active.get(runId);
+          if (active?.timer) clearTimeout(active.timer);
+          this.active.delete(runId);
+
           const steps = await this.prisma.runStep.findMany({ where: { runId }, select: { status: true } });
-          failed = steps.filter(s => s.status !== 'success').length;
-          success = steps.length - failed;
+          failed = steps.filter((s) => s.status !== StepStatus.success).length;
+          const success = steps.length - failed;
 
           const endedAt = new Date();
           const { p50, p95, p99 } = this.p(latencies);
-          const status = err
-            ? 'error'
-            : failed === 0
-              ? 'success'
-              : 'partial';
 
-          // Save summary JSON to storage
+          let status: RunStatus;
+          let health: HealthStatus;
+          let errorMsg: string | null = null;
+          if (active?.reason === 'timeout') {
+            status = RunStatus.timeout;
+            health = HealthStatus.UNHEALTHY;
+            errorMsg = 'run timed out';
+          } else if (active?.reason === 'cancel') {
+            status = RunStatus.cancelled;
+            health = HealthStatus.UNKNOWN;
+            errorMsg = 'run cancelled';
+          } else {
+            status = failed === 0 ? RunStatus.success : RunStatus.partial;
+            health = failed === 0 ? HealthStatus.HEALTHY : HealthStatus.DEGRADED;
+          }
+
           const reportUri = await this.storage.putObject({
             bucket: 'reports',
             key: `${runId}.summary.json`,
-            body: Buffer.from(JSON.stringify(summary ?? runSummary ?? {}, null, 2), 'utf8'),
+            body: Buffer.from(JSON.stringify(summary ?? {}, null, 2), 'utf8'),
             contentType: 'application/json',
           });
 
@@ -182,9 +266,11 @@ export class NewmanRunner {
               totalRequests: total,
               successRequests: success,
               failedRequests: failed,
-              p50Ms: p50, p95Ms: p95, p99Ms: p99,
-              health: failed === 0 ? 'HEALTHY' : 'DEGRADED',
-              errorMsg: err?.message ?? null,
+              p50Ms: p50,
+              p95Ms: p95,
+              p99Ms: p99,
+              health,
+              errorMsg,
               reportUri,
             },
           });
@@ -198,3 +284,4 @@ export class NewmanRunner {
     });
   }
 }
+
