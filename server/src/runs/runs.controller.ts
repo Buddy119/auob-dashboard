@@ -17,6 +17,16 @@ export class RunsController {
     return this.svc.get(runId);
   }
 
+  @Get('api/runs/:runId/steps')
+  async steps(@Param('runId') runId: string) {
+    return this.svc.listSteps(runId);
+  }
+
+  @Get('api/runs/:runId/assertions')
+  async assertions(@Param('runId') runId: string, @Query('stepId') stepId?: string) {
+    return this.svc.listAssertions(runId, stepId);
+  }
+
   @Get('api/runs')
   async list(@Query() q: ListRunsQueryDto) {
     return this.svc.list(q);

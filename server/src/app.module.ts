@@ -7,9 +7,11 @@ import { PrismaModule } from './prisma/prisma.module';
 import { StorageModule } from './storage/storage.module';
 import { CollectionsModule } from './collections/collections.module';
 import { RunsModule } from './runs/runs.module';
+import { RealtimeModule } from './realtime/realtime.module';
 
 @Module({
-  imports: [AppConfigModule, PrismaModule, StorageModule, HealthModule, CollectionsModule, RunsModule],
+  imports: [AppConfigModule, PrismaModule, StorageModule, HealthModule,
+    CollectionsModule, RunsModule, RealtimeModule],
   providers: [
     {
       provide: Logger,
