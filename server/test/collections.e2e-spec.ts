@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
-import * as request from 'supertest';
+import request from 'supertest';
 import multipart from '@fastify/multipart';
 import { AppModule } from '../src/app.module';
 

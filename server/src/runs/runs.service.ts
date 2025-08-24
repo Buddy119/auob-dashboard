@@ -20,7 +20,12 @@ export class RunsService {
       select: { id: true },
     });
 
-    this.executor.enqueue(run.id);
+    this.executor.enqueue(run.id, {
+      timeoutRequestMs: dto.timeoutRequestMs,
+      delayRequestMs: dto.delayRequestMs,
+      bail: dto.bail,
+      insecure: dto.insecure,
+    });
     return { runId: run.id };
   }
 
@@ -50,5 +55,24 @@ export class RunsService {
       }),
     ]);
     return { total, items, limit, offset };
+  }
+
+  async listSteps(runId: string) {
+    const run = await this.prisma.run.findUnique({ where: { id: runId } });
+    if (!run) throw new BadRequestException('run not found');
+    return this.prisma.runStep.findMany({
+      where: { runId },
+      orderBy: { orderIndex: 'asc' },
+      select: { id: true, name: true, status: true, httpStatus: true, latencyMs: true, responseSize: true, orderIndex: true }
+    });
+  }
+
+  async listAssertions(runId: string, stepId?: string) {
+    const run = await this.prisma.run.findUnique({ where: { id: runId } });
+    if (!run) throw new BadRequestException('run not found');
+    return this.prisma.runAssertion.findMany({
+      where: stepId ? { runStepId: stepId } : { step: { runId } },
+      select: { id: true, runStepId: true, name: true, status: true, errorMsg: true }
+    });
   }
 }
