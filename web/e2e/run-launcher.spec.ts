@@ -9,7 +9,7 @@ test('from collection detail → open dialog → start run → redirect to run p
     await page.getByRole('button', { name: 'Upload Collection' }).click();
     const colPath = path.resolve(__dirname, '../fixtures/postman/simple.collection.json');
     await page.locator('input[type="file"][name="collection"]').setInputFiles(colPath);
-    await page.getByRole('button', { name: 'Upload' }).click();
+    await page.getByRole('button', { name: 'Upload', exact: true }).click();
     await expect(page.getByRole('link', { name: 'Web FE Test Collection' })).toBeVisible({ timeout: 10000 });
   }
 

@@ -30,3 +30,24 @@ export type CreateRunBody = Partial<{
 }>;
 
 export type CreateRunResponse = { runId: string };
+
+export type StepStatus = 'success'|'fail';
+export type AssertionStatus = 'pass'|'fail';
+
+export type RunStepView = {
+  id: string;
+  name: string;
+  status: StepStatus;
+  httpStatus: number | null;
+  latencyMs: number | null;
+  requestId?: string | null;
+  requestPath?: string | null;
+  orderIndex?: number | null;
+};
+
+export type RunAssertionView = {
+  stepId: string;
+  name: string;
+  status: AssertionStatus;
+  errorMsg?: string | null;
+};
