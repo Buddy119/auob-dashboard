@@ -1,1 +1,5 @@
 node_modules
+server/prisma/*.db*
+server/prisma/prisma/
+server/uploads/
+server/server-0.0.1.tgz
