@@ -2,6 +2,8 @@ import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { RunsService } from './runs.service';
 import { CreateRunDto } from './dto/create-run.dto';
 import { ListRunsQueryDto } from './dto/list-runs.dto';
+import { ListRunStepsDto } from './dto/list-run-steps.dto';
+import { ListAssertionsDto } from './dto/list-assertions.dto';
 
 @Controller()
 export class RunsController {
@@ -23,13 +25,13 @@ export class RunsController {
   }
 
   @Get('api/runs/:runId/steps')
-  async steps(@Param('runId') runId: string) {
-    return this.svc.listSteps(runId);
+  async steps(@Param('runId') runId: string, @Query() q: ListRunStepsDto) {
+    return this.svc.listSteps(runId, q);
   }
 
   @Get('api/runs/:runId/assertions')
-  async assertions(@Param('runId') runId: string, @Query('stepId') stepId?: string) {
-    return this.svc.listAssertions(runId, stepId);
+  async assertions(@Param('runId') runId: string, @Query() q: ListAssertionsDto) {
+    return this.svc.listAssertions(runId, q);
   }
 
   @Get('api/runs')

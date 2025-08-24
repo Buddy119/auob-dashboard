@@ -211,4 +211,17 @@ export class CollectionsService {
 
     return { ...col, requests };
   }
+
+  async updateRequestCritical(collectionId: string, requestId: string, isCritical: boolean) {
+    const req = await this.prisma.collectionRequest.findUnique({ where: { id: requestId } });
+    if (!req || req.collectionId !== collectionId) {
+      throw new BadRequestException('request not found in collection');
+    }
+    const updated = await this.prisma.collectionRequest.update({
+      where: { id: requestId },
+      data: { isCritical },
+      select: { id: true, isCritical: true },
+    });
+    return updated;
+  }
 }

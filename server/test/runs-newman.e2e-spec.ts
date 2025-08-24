@@ -160,8 +160,8 @@ describe('Newman Runner (e2e)', () => {
     const steps = await request(app.getHttpServer())
       .get(`/api/runs/${runId}/steps`)
       .expect(200);
-    expect(steps.body.length).toBe(3);
-    steps.body.forEach((s: any) => {
+    expect(steps.body.total).toBe(3);
+    steps.body.items.forEach((s: any) => {
       expect(['success'].includes(s.status)).toBe(true);
       expect([200, 201]).toContain(s.httpStatus);
     });
@@ -170,8 +170,8 @@ describe('Newman Runner (e2e)', () => {
     const assertions = await request(app.getHttpServer())
       .get(`/api/runs/${runId}/assertions`)
       .expect(200);
-    expect(assertions.body.length).toBeGreaterThanOrEqual(3);
-    const names = assertions.body.map((a: any) => a.name);
+    expect(assertions.body.total).toBeGreaterThanOrEqual(3);
+    const names = assertions.body.items.map((a: any) => a.name);
     expect(names).toEqual(expect.arrayContaining(['status 200', 'status 201']));
   });
 });

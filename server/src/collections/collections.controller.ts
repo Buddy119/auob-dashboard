@@ -1,10 +1,12 @@
 import {
+  Body,
   Controller,
   Get,
   Post,
   Req,
   Query,
   Param,
+  Patch,
   DefaultValuePipe,
   ParseBoolPipe,
 } from '@nestjs/common';
@@ -12,6 +14,7 @@ import { CollectionsService } from './collections.service';
 import { FastifyRequest } from 'fastify';
 import { ListCollectionsQueryDto } from './dto/list-collections.dto';
 import type { Multipart } from '@fastify/multipart';
+import { UpdateRequestDto } from './dto/update-request.dto';
 
 @Controller('api/collections')
 export class CollectionsController {
@@ -81,5 +84,14 @@ export class CollectionsController {
     @Query('replace', new DefaultValuePipe(true), ParseBoolPipe) replace: boolean,
   ) {
     return this.svc.indexRequests(id, replace);
+  }
+
+  @Patch(':collectionId/requests/:requestId')
+  async updateRequestCritical(
+    @Param('collectionId') collectionId: string,
+    @Param('requestId') requestId: string,
+    @Body() body: UpdateRequestDto,
+  ) {
+    return this.svc.updateRequestCritical(collectionId, requestId, body.isCritical);
   }
 }
