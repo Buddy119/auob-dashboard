@@ -3,6 +3,8 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateRunDto } from './dto/create-run.dto';
 import { RunsExecutor } from './runs.executor';
 import { RunStatus } from '../prisma/enums';
+import { ListRunStepsDto } from './dto/list-run-steps.dto';
+import { ListAssertionsDto } from './dto/list-assertions.dto';
 
 @Injectable()
 export class RunsService {
@@ -59,24 +61,37 @@ export class RunsService {
     return { total, items, limit, offset };
   }
 
-  async listSteps(runId: string) {
+  async listSteps(runId: string, q: ListRunStepsDto) {
     const run = await this.prisma.run.findUnique({ where: { id: runId } });
     if (!run) throw new BadRequestException('run not found');
-    return this.prisma.runStep.findMany({
-      where: { runId },
-      orderBy: { orderIndex: 'asc' },
-      select: {
-        id: true,
-        name: true,
-        status: true,
-        httpStatus: true,
-        latencyMs: true,
-        responseSize: true,
-        orderIndex: true,
-        requestId: true,
-        request: { select: { path: true } },
-      },
-    });
+
+    const where: any = { runId };
+    if (q.requestId) where.requestId = q.requestId;
+    const limit = q.limit !== undefined ? Number(q.limit) : 20;
+    const offset = q.offset !== undefined ? Number(q.offset) : 0;
+
+    const [total, items] = await this.prisma.$transaction([
+      this.prisma.runStep.count({ where }),
+      this.prisma.runStep.findMany({
+        where,
+        orderBy: [{ orderIndex: 'asc' }, { id: 'asc' }],
+        skip: offset,
+        take: limit,
+        select: {
+          id: true,
+          name: true,
+          status: true,
+          httpStatus: true,
+          latencyMs: true,
+          responseSize: true,
+          orderIndex: true,
+          requestId: true,
+          request: { select: { path: true } },
+        },
+      }),
+    ]);
+
+    return { total, items, limit, offset };
   }
 
   async cancel(runId: string) {
@@ -87,12 +102,25 @@ export class RunsService {
     return { status: 'cancel_requested', mode: res.mode };
   }
 
-  async listAssertions(runId: string, stepId?: string) {
+  async listAssertions(runId: string, q: ListAssertionsDto) {
     const run = await this.prisma.run.findUnique({ where: { id: runId } });
     if (!run) throw new BadRequestException('run not found');
-    return this.prisma.runAssertion.findMany({
-      where: stepId ? { runStepId: stepId } : { step: { runId } },
-      select: { id: true, runStepId: true, name: true, status: true, errorMsg: true }
-    });
+
+    const where: any = q.stepId ? { runStepId: q.stepId } : { step: { runId } };
+    const limit = q.limit !== undefined ? Number(q.limit) : 50;
+    const offset = q.offset !== undefined ? Number(q.offset) : 0;
+
+    const [total, items] = await this.prisma.$transaction([
+      this.prisma.runAssertion.count({ where }),
+      this.prisma.runAssertion.findMany({
+        where,
+        orderBy: [{ id: 'asc' }],
+        skip: offset,
+        take: limit,
+        select: { id: true, runStepId: true, name: true, status: true, errorMsg: true },
+      }),
+    ]);
+
+    return { total, items, limit, offset };
   }
 }

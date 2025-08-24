@@ -151,7 +151,25 @@ export class NewmanRunner {
         lastStepId = stepId;
         const p = (async () => {
           try {
-            const requestId = await this.mapRequestId(runRow.collectionId, args?.item);
+            const pathStr = this.computePathFromItem(args?.item);
+            let requestId: string | null = null;
+            if (pathStr) {
+              const reqRow = await this.prisma.collectionRequest.findFirst({
+                where: { collectionId: runRow.collectionId, path: pathStr },
+                select: { id: true },
+              });
+              requestId = reqRow?.id ?? null;
+            }
+            if (!requestId) {
+              const nameLookup = args?.item?.name;
+              if (nameLookup) {
+                const byName = await this.prisma.collectionRequest.findFirst({
+                  where: { collectionId: runRow.collectionId, name: nameLookup },
+                  select: { id: true },
+                });
+                requestId = byName?.id ?? null;
+              }
+            }
             const code = args?.response?.code ?? null;
             const rt = typeof args?.response?.responseTime === 'number' ? args.response.responseTime : null;
             const rsize =
@@ -180,7 +198,12 @@ export class NewmanRunner {
             total += 1;
             if (typeof rt === 'number') latencies.push(rt);
 
-            this.events.publish({ type: 'step_progress', runId, step });
+            // publish with rich payload (include requestPath)
+            this.events.publish({
+              type: 'step_progress',
+              runId,
+              step: { ...step, requestPath: pathStr },
+            });
           } catch {
             // no-op
           }
@@ -211,7 +234,7 @@ export class NewmanRunner {
               type: 'assertion_result',
               runId,
               stepId: lastStepId,
-              assertion: { name: args?.assertion, status: err ? 'fail' : 'pass' },
+              assertion: { name: args?.assertion, status: err ? 'fail' : 'pass', errorMsg: err?.message ?? null },
             });
           } catch {
             /* no-op */
@@ -227,12 +250,22 @@ export class NewmanRunner {
           if (active?.timer) clearTimeout(active.timer);
           this.active.delete(runId);
 
-          const steps = await this.prisma.runStep.findMany({ where: { runId }, select: { status: true } });
+          const steps = await this.prisma.runStep.findMany({ where: { runId }, select: { status: true, requestId: true } });
           failed = steps.filter((s) => s.status !== StepStatus.success).length;
           const success = steps.length - failed;
 
           const endedAt = new Date();
           const { p50, p95, p99 } = this.p(latencies);
+
+          const failedSteps = steps.filter((s) => s.status !== StepStatus.success);
+          const failedReqIds = failedSteps.map((s) => s.requestId).filter((x): x is string => !!x);
+          const criticalFailedCount = failedReqIds.length
+            ? await this.prisma.collectionRequest.count({
+                where: { id: { in: failedReqIds }, isCritical: true },
+              })
+            : 0;
+
+          const slaMs = Number(process.env.HEALTH_P95_SLA_MS ?? 0) || undefined;
 
           let status: RunStatus;
           let health: HealthStatus;
@@ -247,7 +280,11 @@ export class NewmanRunner {
             errorMsg = 'run cancelled';
           } else {
             status = failed === 0 ? RunStatus.success : RunStatus.partial;
-            health = failed === 0 ? HealthStatus.HEALTHY : HealthStatus.DEGRADED;
+            if (failed > 0) {
+              health = criticalFailedCount > 0 ? HealthStatus.UNHEALTHY : HealthStatus.DEGRADED;
+            } else {
+              health = slaMs && p95 > slaMs ? HealthStatus.DEGRADED : HealthStatus.HEALTHY;
+            }
           }
 
           const reportUri = await this.storage.putObject({

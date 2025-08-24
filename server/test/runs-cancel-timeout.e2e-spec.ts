@@ -163,8 +163,8 @@ describe('Cancel & Timeout (e2e)', () => {
     expect(finished.status).toBe('success');
 
     const steps = await request(app.getHttpServer()).get(`/api/runs/${runId}/steps`).expect(200);
-    expect(steps.body.length).toBe(3);
-    for (const s of steps.body) {
+    expect(steps.body.total).toBe(3);
+    for (const s of steps.body.items) {
       expect(s.requestId).toBeTruthy();
       expect(s.request?.path).toMatch(/Slow (A|B|C)$/);
     }
