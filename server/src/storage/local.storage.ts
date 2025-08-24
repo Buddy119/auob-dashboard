@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { createWriteStream } from 'fs';
 // import path from 'path';
 import * as path from 'path';
-import fs from 'fs-extra';
+import { promises as fs } from 'fs';
 import { Readable } from 'stream';
 
 @Injectable()
@@ -17,7 +17,7 @@ export class LocalStorage implements IStorage {
 
   async putObject({ bucket, key, body }: PutParams): Promise<string> {
     const abs = path.join(this.root, bucket, key);
-    await fs.ensureDir(path.dirname(abs));
+    await fs.mkdir(path.dirname(abs), { recursive: true });
     if (Buffer.isBuffer(body)) {
       await fs.writeFile(abs, body);
     } else if (body instanceof Readable) {
