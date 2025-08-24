@@ -17,6 +17,11 @@ export class RunsController {
     return this.svc.get(runId);
   }
 
+  @Post('api/runs/:runId/cancel')
+  async cancel(@Param('runId') runId: string) {
+    return this.svc.cancel(runId);
+  }
+
   @Get('api/runs/:runId/steps')
   async steps(@Param('runId') runId: string) {
     return this.svc.listSteps(runId);
