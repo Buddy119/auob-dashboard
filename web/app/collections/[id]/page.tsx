@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/Input';
 import { RequestsTree } from '@/components/collections/RequestsTree';
 import { EnvsTable } from '@/components/collections/EnvsTable';
 import { Button } from '@/components/ui/Button';
+import { RunDialog } from '@/components/runs/RunDialog';
 
 function useTab() {
   const params = useSearchParams();
@@ -25,6 +26,7 @@ export default function CollectionDetailPage({ params }: { params: { id: string 
   const id = params.id;
   const { tab, setTab } = useTab();
   const [filter, setFilter] = useState('');
+  const [runOpen, setRunOpen] = useState(false);
   const withRequests = tab === 'requests';
 
   const { data, isLoading, isError } = useCollectionDetail(id, withRequests);
@@ -40,7 +42,15 @@ export default function CollectionDetailPage({ params }: { params: { id: string 
               Version: {data.version ?? '-'} · Created: {new Date(data.createdAt).toLocaleString()} · Updated: {new Date(data.updatedAt).toLocaleString()}
             </div>
           </div>
-          <Link href="/collections" className="text-sm text-primary hover:underline">← Back to Collections</Link>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setRunOpen(true)}
+              className="px-3 py-2 text-sm rounded-md bg-primary text-white hover:opacity-90"
+            >
+              Run collection
+            </button>
+            <Link href="/collections" className="text-sm text-primary hover:underline">← Back to Collections</Link>
+          </div>
         </div>
       </div>
     );
@@ -89,6 +99,14 @@ export default function CollectionDetailPage({ params }: { params: { id: string 
             </div>
           )}
         </>
+      )}
+      {data && (
+        <RunDialog
+          open={runOpen}
+          onOpenChange={setRunOpen}
+          collectionId={id}
+          envs={data.envs}
+        />
       )}
     </div>
   );
