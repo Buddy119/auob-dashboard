@@ -1,0 +1,14 @@
+{
+  "info": {
+    "name": "Web FE Test Collection",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Users",
+      "item": [
+        { "name": "List Users", "request": { "method": "GET", "url": "https://example.com/users" } }
+      ]
+    }
+  ]
+}
