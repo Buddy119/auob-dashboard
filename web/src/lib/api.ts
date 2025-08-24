@@ -13,9 +13,10 @@ async function request<T>(path: string, init?: RequestInit, timeoutMs = 15000): 
       reject(Object.assign(new Error('Request timeout'), { status: 408 }));
     }, timeoutMs);
   });
+  const prefixed = path.startsWith('/api') || path.startsWith('/health') ? path : `/api${path}`;
   try {
     const res = (await Promise.race([
-      fetch(`${base}${path}`, {
+      fetch(`${base}${prefixed}`, {
         ...init,
         headers: { 'content-type': 'application/json', ...(init?.headers || {}) },
         signal: controller.signal,
