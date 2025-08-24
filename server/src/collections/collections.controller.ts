@@ -12,7 +12,6 @@ import {
 } from '@nestjs/common';
 import { CollectionsService } from './collections.service';
 import { FastifyRequest } from 'fastify';
-import { ListCollectionsQueryDto } from './dto/list-collections.dto';
 import type { Multipart } from '@fastify/multipart';
 import { UpdateRequestDto } from './dto/update-request.dto';
 
@@ -63,8 +62,14 @@ export class CollectionsController {
   }
 
   @Get()
-  async list(@Query() q: ListCollectionsQueryDto) {
-    return this.svc.list(q.limit, q.offset, q.q);
+  async list(
+    @Query('limit') limitStr?: string,
+    @Query('offset') offsetStr?: string,
+    @Query('q') q?: string,
+  ) {
+    const limit = limitStr ? parseInt(limitStr, 10) : 20;
+    const offset = offsetStr ? parseInt(offsetStr, 10) : 0;
+    return this.svc.list(limit, offset, q);
   }
 
   @Get(':id')
