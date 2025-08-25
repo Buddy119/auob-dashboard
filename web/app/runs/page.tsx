@@ -7,6 +7,8 @@ import { RunsTable } from '@/components/runs/RunsTable';
 import { CollectionSelect } from '@/components/runs/CollectionSelect';
 import { RunsPagination } from '@/components/runs/RunsPagination';
 import { Input } from '@/components/ui/Input';
+import { TableSkeleton } from '@/components/skeletons/TableSkeleton';
+import { ErrorPanel } from '@/components/common/ErrorPanel';
 
 const STATUSES = ['all','queued','running','success','partial','timeout','error','cancelled'] as const;
 
@@ -74,10 +76,10 @@ export default function RunsPage() {
         </div>
       </div>
 
-      {isError && <div className="rounded border border-red-500/40 p-3 text-sm text-red-600">Failed to load runs.</div>}
+      {isError && <ErrorPanel message="Failed to load runs." />}
 
       {isLoading ? (
-        <div className="rounded-lg border border-border/40 p-6 text-sm opacity-75">Loading…</div>
+        <TableSkeleton rows={10} />
       ) : (
         <>
           <RunsTable items={filteredItems} collectionNameOf={collectionNameOf} />
