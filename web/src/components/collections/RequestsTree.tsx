@@ -40,13 +40,13 @@ export function RequestsTree({
   const Folder = ({ node }: { node: Extract<TreeNode, { type: 'folder' }> }) => {
     const isOpen = !!open[node.key];
     return (
-      <div className="ml-2">
+      <div className="ml-2" role="treeitem" aria-expanded={isOpen} aria-label={node.name}>
         <div className="flex items-center gap-2 py-1 cursor-pointer select-none" onClick={() => setOpen({ ...open, [node.key]: !isOpen })}>
-          <span className="text-xs">{isOpen ? '▾' : '▸'}</span>
+          <span className="text-xs" aria-hidden>{isOpen ? '▾' : '▸'}</span>
           <span className="font-medium">{node.name}</span>
         </div>
         {isOpen && (
-          <div className="ml-4 border-l border-border/30">
+          <div className="ml-4 border-l border-border/30" role="group">
             {node.children.map(c => c.type === 'folder'
               ? <Folder key={c.key} node={c} />
               : <RequestRow key={c.key} node={c} />
@@ -89,11 +89,11 @@ export function RequestsTree({
       <div className="flex items-center justify-between mb-2">
         <div className="text-sm opacity-70">{filtered.length} request(s)</div>
         <div className="flex gap-2">
-          <Button variant="ghost" onClick={expandAll}>Expand all</Button>
-          <Button variant="ghost" onClick={collapseAll}>Collapse all</Button>
+          <Button variant="ghost" onClick={expandAll} aria-label="Expand all folders">Expand all</Button>
+          <Button variant="ghost" onClick={collapseAll} aria-label="Collapse all folders">Collapse all</Button>
         </div>
       </div>
-      <div className="rounded border border-border/40 p-2">
+      <div className="rounded border border-border/40 p-2" role="tree" aria-label="Collection requests">
         {tree.length === 0 ? (
           <div className="p-4 text-sm opacity-70">No requests match your filter.</div>
         ) : (

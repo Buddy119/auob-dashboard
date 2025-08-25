@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useState, useMemo } from 'react';
+import { useShortcuts } from '@/hooks/useShortcuts';
 import { useCollectionDetail } from '@/features/collections/queries';
 import { Input } from '@/components/ui/Input';
 import { RequestsTree } from '@/components/collections/RequestsTree';
@@ -37,6 +38,21 @@ export default function CollectionDetailPage({ params }: { params: { id: string 
   const withRequests = tab === 'requests';
 
   const { data, isLoading, isError } = useCollectionDetail(id, withRequests);
+
+  useShortcuts([
+    { combo: 'r', handler: () => setRunOpen(true) },
+    {
+      combo: 'slash',
+      handler: () => {
+        // focus requests filter if tab is requests
+        if (tab === 'requests') {
+          const el = document.getElementById('requests-filter') as HTMLInputElement | null;
+          el?.focus();
+        }
+      },
+      when: () => tab === 'requests',
+    },
+  ], [tab]);
 
   const header = useMemo(() => {
     if (!data) return null;
@@ -104,8 +120,10 @@ export default function CollectionDetailPage({ params }: { params: { id: string 
           {tab === 'requests' && (
             <>
               <div className="flex items-center gap-3">
-                <Input placeholder="Filter by name or path…" value={filter} onChange={(e) => setFilter(e.target.value)} />
+                <label htmlFor="requests-filter" className="sr-only">Filter requests</label>
+                <Input id="requests-filter" placeholder="Filter by name or path…" value={filter} onChange={(e) => setFilter(e.target.value)} />
                 <div className="text-sm opacity-70">Total indexed: {data._count.requests}</div>
+                <span className="text-xs opacity-60">Shortcuts: R to run, / to search</span>
               </div>
               <RequestsTree collectionId={id} requests={data.requests || []} filter={filter} />
             </>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useCollectionsList } from '@/features/collections/queries';
 import { CollectionsTable } from '@/components/collections/CollectionsTable';
@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { UploadCollectionDialog } from '@/components/collections/UploadCollectionDialog';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
+import { useShortcuts } from '@/hooks/useShortcuts';
 import { TableSkeleton } from '@/components/skeletons/TableSkeleton';
 import { ErrorPanel } from '@/components/common/ErrorPanel';
 
@@ -23,6 +24,7 @@ export default function CollectionsPage() {
 
   const { data, isLoading, isError } = useCollectionsList(debouncedQ, page, 10);
   const [open, setOpen] = useState(false);
+  const searchRef = useRef<HTMLInputElement>(null);
 
   const onSearchChange = (v: string) => {
     setQ(v);
@@ -31,6 +33,11 @@ export default function CollectionsPage() {
     sp.set('page', '1');
     router.push(`/collections?${sp.toString()}`);
   };
+
+  useShortcuts([
+    { combo: 'u', handler: () => setOpen(true) },
+    { combo: 'slash', handler: () => searchRef.current?.focus() },
+  ], [params.toString()]);
 
   const total = data?.total ?? 0;
   const limit = data?.limit ?? 10;
@@ -43,7 +50,9 @@ export default function CollectionsPage() {
         <Button onClick={() => setOpen(true)} aria-haspopup="dialog">Upload Collection</Button>
       </div>
       <div className="flex items-center gap-3">
-        <Input placeholder="Search collections…" value={q} onChange={(e) => onSearchChange(e.target.value)} />
+        <label htmlFor="collections-search" className="sr-only">Search collections</label>
+        <Input id="collections-search" ref={searchRef} placeholder="Search collections…" value={q} onChange={(e) => onSearchChange(e.target.value)} />
+        <span className="text-xs opacity-60">Shortcut: /</span>
       </div>
       {isError && <ErrorPanel message="Failed to load collections." />}
       {isLoading ? (

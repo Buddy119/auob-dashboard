@@ -4,10 +4,10 @@ import type { RunAssertionView } from '@/features/runs/types';
 
 export function AssertionsPanel({ assertions }: { assertions: RunAssertionView[] }) {
   if (!assertions.length) {
-    return <div className="rounded border border-border/40 p-4 text-sm opacity-70">No assertions for this step.</div>;
+    return <div id="assertions-panel" tabIndex={0} className="rounded border border-border/40 p-4 text-sm opacity-70">No assertions for this step.</div>;
   }
   return (
-    <div className="rounded border border-border/40">
+    <div id="assertions-panel" tabIndex={0} className="rounded border border-border/40">
       <ul className="divide-y divide-border/40">
         {assertions.map((a, i) => (
           <li key={`${a.name}-${i}`} className="p-3">
