@@ -9,6 +9,7 @@ import { RequestsTree } from '@/components/collections/RequestsTree';
 import { EnvsTable } from '@/components/collections/EnvsTable';
 import { Button } from '@/components/ui/Button';
 import { RunDialog } from '@/components/runs/RunDialog';
+import { getPreferredEnvId, setPreferredEnvId } from '@/features/collections/envPref';
 
 function useTab() {
   const params = useSearchParams();
@@ -27,6 +28,7 @@ export default function CollectionDetailPage({ params }: { params: { id: string 
   const { tab, setTab } = useTab();
   const [filter, setFilter] = useState('');
   const [runOpen, setRunOpen] = useState(false);
+  const [initialEnvId, setInitialEnvId] = useState<string | undefined>(undefined);
   const withRequests = tab === 'requests';
 
   const { data, isLoading, isError } = useCollectionDetail(id, withRequests);
@@ -44,7 +46,10 @@ export default function CollectionDetailPage({ params }: { params: { id: string 
           </div>
           <div className="flex items-center gap-2">
             <button
-              onClick={() => setRunOpen(true)}
+              onClick={() => {
+                setInitialEnvId(undefined);
+                setRunOpen(true);
+              }}
               className="px-3 py-2 text-sm rounded-md bg-primary text-white hover:opacity-90"
             >
               Run collection
@@ -90,7 +95,27 @@ export default function CollectionDetailPage({ params }: { params: { id: string 
           )}
 
           {tab === 'environments' && (
-            <EnvsTable envs={data.envs} />
+            <>
+              <EnvsTable
+                envs={data.envs}
+                preferredEnvId={getPreferredEnvId(id)}
+                onSetPreferred={(envId) => {
+                  setPreferredEnvId(id, envId);
+                  setInitialEnvId(envId);
+                }}
+                onRunWith={(envId) => {
+                  setInitialEnvId(envId);
+                  setRunOpen(true);
+                }}
+              />
+              <RunDialog
+                open={runOpen}
+                onOpenChange={setRunOpen}
+                collectionId={id}
+                envs={data.envs}
+                initialEnvId={initialEnvId || getPreferredEnvId(id) || data.envs.find(e => e.isDefault)?.id}
+              />
+            </>
           )}
 
           {tab === 'history' && (
@@ -100,12 +125,13 @@ export default function CollectionDetailPage({ params }: { params: { id: string 
           )}
         </>
       )}
-      {data && (
+      {data && tab !== 'environments' && (
         <RunDialog
           open={runOpen}
           onOpenChange={setRunOpen}
           collectionId={id}
           envs={data.envs}
+          initialEnvId={initialEnvId || getPreferredEnvId(id) || data.envs.find(e => e.isDefault)?.id}
         />
       )}
     </div>
