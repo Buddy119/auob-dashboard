@@ -3,6 +3,9 @@
 import type { Run } from '@/features/runs/types';
 import { RunStatusBadge } from './RunStatusBadge';
 import { Button } from '@/components/ui/Button';
+import { CopyButton } from '@/components/ui/CopyButton';
+
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:4000';
 
 export function RunHeader({
   run,
@@ -23,11 +26,29 @@ export function RunHeader({
           <div className="text-sm opacity-70">
             Health: <span className="font-mono">{run?.health ?? '-'}</span>
           </div>
-          <div className={`text-xs rounded px-1.5 py-0.5 ${connected ? 'bg-emerald-600 text-white' : 'bg-zinc-600 text-white'}`}>
+          <div
+            className={`text-xs rounded px-1.5 py-0.5 ${connected ? 'bg-emerald-600 text-white' : 'bg-zinc-600 text-white'}`}
+            title={connected ? 'Receiving live events via SSE' : 'Falling back to periodic polling'}
+          >
             {connected ? 'LIVE' : 'DISCONNECTED'}
           </div>
         </div>
         <div className="flex items-center gap-2">
+          {run?.id && (
+            <>
+              <CopyButton label="Copy run ID" copiedLabel="Run ID copied" text={run.id} />
+              <CopyButton
+                label="Copy run link"
+                copiedLabel="Link copied"
+                text={typeof window !== 'undefined' ? window.location.href : `${API_BASE}/runs/${run?.id}`}
+              />
+              <CopyButton
+                label="Copy cancel cURL"
+                copiedLabel="cURL copied"
+                text={`curl -X POST "${API_BASE}/api/runs/${run?.id}/cancel" -H "content-type: application/json" -d '{}'`}
+              />
+            </>
+          )}
           <Button variant="ghost" onClick={onCancel} disabled={cancelling || !run || ['success','partial','fail','timeout','error','cancelled'].includes(run.status)}>
             {cancelling ? 'Cancelling…' : 'Cancel'}
           </Button>

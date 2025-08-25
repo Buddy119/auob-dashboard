@@ -9,6 +9,8 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { UploadCollectionDialog } from '@/components/collections/UploadCollectionDialog';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
+import { TableSkeleton } from '@/components/skeletons/TableSkeleton';
+import { ErrorPanel } from '@/components/common/ErrorPanel';
 
 export default function CollectionsPage() {
   const params = useSearchParams();
@@ -43,9 +45,9 @@ export default function CollectionsPage() {
       <div className="flex items-center gap-3">
         <Input placeholder="Search collections…" value={q} onChange={(e) => onSearchChange(e.target.value)} />
       </div>
-      {isError && <div className="rounded border border-red-500/40 p-3 text-sm text-red-600">Failed to load collections.</div>}
+      {isError && <ErrorPanel message="Failed to load collections." />}
       {isLoading ? (
-        <div className="rounded-lg border border-border/40 p-6 text-sm opacity-75">Loading…</div>
+        <TableSkeleton rows={8} />
       ) : (
         <>
           <CollectionsTable items={items} />

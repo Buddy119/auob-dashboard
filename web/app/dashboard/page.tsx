@@ -7,6 +7,8 @@ import { useCollectionsOverview, useTopFailingRequests } from '@/features/dashbo
 import { CollectionHealthCard } from '@/components/dashboard/CollectionHealthCard';
 import { TopFailingRequests } from '@/components/dashboard/TopFailingRequests';
 import Link from 'next/link';
+import { CardsSkeleton } from '@/components/skeletons/CardsSkeleton';
+import { ErrorPanel } from '@/components/common/ErrorPanel';
 
 export default function DashboardPage() {
   const health = useQuery({
@@ -44,9 +46,9 @@ export default function DashboardPage() {
           <Link href="/collections" className="text-sm text-primary hover:underline">View all →</Link>
         </div>
 
-        {isError && <div className="rounded border border-red-500/40 p-3 text-sm text-red-600">Failed to load collections.</div>}
+        {isError && <ErrorPanel message="Failed to load collections." />}
         {isLoading ? (
-          <div className="rounded-lg border border-border/40 p-6 text-sm opacity-75">Loading…</div>
+          <CardsSkeleton count={6} />
         ) : items.length === 0 ? (
           <div className="rounded-lg border border-border/40 p-6 text-sm opacity-75">
             No collections yet. Go to <Link className="text-primary hover:underline" href="/collections">Collections</Link> to upload your first one.

@@ -7,13 +7,15 @@ import { RunHeader } from '@/components/runs/RunHeader';
 import { RunTimeline } from '@/components/runs/RunTimeline';
 import { AssertionsPanel } from '@/components/runs/AssertionsPanel';
 import { useEffect, useMemo, useState } from 'react';
+import { RunConsoleSkeleton } from '@/components/skeletons/RunConsoleSkeleton';
+import { ErrorPanel } from '@/components/common/ErrorPanel';
 
 const TERMINAL: string[] = ['success','partial','fail','timeout','error','cancelled'];
 
 export default function RunPage({ params }: { params: { runId: string } }) {
   const runId = params.runId;
 
-  const { data: run } = useRun(runId);
+  const { data: run, isError } = useRun(runId);
   const cancelMut = useCancelRun();
 
   // Stream state
@@ -43,32 +45,39 @@ export default function RunPage({ params }: { params: { runId: string } }) {
 
   return (
     <div className="p-6 space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Run <span className="font-mono text-base">#{runId.slice(0, 8)}</span></h1>
-        <Link href="/runs" className="text-sm text-primary hover:underline">← Runs</Link>
-      </div>
+      {!run && <RunConsoleSkeleton />}
+      {isError && <ErrorPanel message="Failed to load run." />}
 
-      <RunHeader
-        run={run}
-        connected={connected}
-        cancelling={cancelMut.isPending}
-        onCancel={() => cancelMut.mutate(runId)}
-      />
+      {run && (
+        <>
+          <div className="flex items-center justify-between">
+            <h1 className="text-2xl font-semibold">Run <span className="font-mono text-base">#{runId.slice(0, 8)}</span></h1>
+            <Link href="/runs" className="text-sm text-primary hover:underline">← Runs</Link>
+          </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div>
-          <h2 className="text-sm font-medium mb-2">Timeline</h2>
-          <RunTimeline
-            steps={steps}
-            selectedStepId={selectedStepId}
-            onSelect={setSelectedStepId}
+          <RunHeader
+            run={run}
+            connected={connected}
+            cancelling={cancelMut.isPending}
+            onCancel={() => cancelMut.mutate(runId)}
           />
-        </div>
-        <div>
-          <h2 className="text-sm font-medium mb-2">Assertions</h2>
-          <AssertionsPanel assertions={assertions} />
-        </div>
-      </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div>
+              <h2 className="text-sm font-medium mb-2">Timeline</h2>
+              <RunTimeline
+                steps={steps}
+                selectedStepId={selectedStepId}
+                onSelect={setSelectedStepId}
+              />
+            </div>
+            <div>
+              <h2 className="text-sm font-medium mb-2">Assertions</h2>
+              <AssertionsPanel assertions={assertions} />
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }

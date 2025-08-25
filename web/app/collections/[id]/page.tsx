@@ -10,6 +10,11 @@ import { EnvsTable } from '@/components/collections/EnvsTable';
 import { Button } from '@/components/ui/Button';
 import { RunDialog } from '@/components/runs/RunDialog';
 import { getPreferredEnvId, setPreferredEnvId } from '@/features/collections/envPref';
+import { RunConsoleSkeleton } from '@/components/skeletons/RunConsoleSkeleton';
+import { ErrorPanel } from '@/components/common/ErrorPanel';
+import { CopyButton } from '@/components/ui/CopyButton';
+
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:4000';
 
 function useTab() {
   const params = useSearchParams();
@@ -45,6 +50,16 @@ export default function CollectionDetailPage({ params }: { params: { id: string 
             </div>
           </div>
           <div className="flex items-center gap-2">
+            {data && (
+              <>
+                <CopyButton label="Copy collection ID" copiedLabel="Collection ID copied" text={data.id} />
+                <CopyButton
+                  label="Copy collection link"
+                  copiedLabel="Link copied"
+                  text={typeof window !== 'undefined' ? window.location.href : `${API_BASE}/collections/${data.id}`}
+                />
+              </>
+            )}
             <button
               onClick={() => {
                 setInitialEnvId(undefined);
@@ -63,27 +78,29 @@ export default function CollectionDetailPage({ params }: { params: { id: string 
 
   return (
     <div className="p-6 space-y-4">
-      {isError && <div className="rounded border border-red-500/40 p-3 text-sm text-red-600">Failed to load collection.</div>}
-      {!isError && header}
+      {isError && <ErrorPanel message="Failed to load collection." />}
 
-      {/* Tabs */}
-      <div className="border-b border-border/40 flex items-center gap-2">
-        {['requests','environments','history'].map(t => (
-          <button
-            key={t}
-            onClick={() => setTab(t)}
-            className={`px-3 py-2 text-sm -mb-px border-b-2 ${tab === t ? 'border-primary text-primary' : 'border-transparent opacity-70 hover:opacity-100'}`}
-            aria-current={tab === t ? 'page' : undefined}
-          >
-            {t[0].toUpperCase() + t.slice(1)}
-          </button>
-        ))}
-      </div>
+      {isLoading && <RunConsoleSkeleton />}
 
-      {/* Tab content */}
-      {isLoading && <div className="rounded-lg border border-border/40 p-6 text-sm opacity-75">Loading…</div>}
       {!isLoading && data && (
         <>
+          {header}
+
+          {/* Tabs */}
+          <div className="border-b border-border/40 flex items-center gap-2">
+            {['requests','environments','history'].map(t => (
+              <button
+                key={t}
+                onClick={() => setTab(t)}
+                className={`px-3 py-2 text-sm -mb-px border-b-2 ${tab === t ? 'border-primary text-primary' : 'border-transparent opacity-70 hover:opacity-100'}`}
+                aria-current={tab === t ? 'page' : undefined}
+              >
+                {t[0].toUpperCase() + t.slice(1)}
+              </button>
+            ))}
+          </div>
+
+          {/* Tab content */}
           {tab === 'requests' && (
             <>
               <div className="flex items-center gap-3">
@@ -123,16 +140,17 @@ export default function CollectionDetailPage({ params }: { params: { id: string 
               History view coming soon (FE‑5). Use the Runs page meanwhile.
             </div>
           )}
+
+          {tab !== 'environments' && (
+            <RunDialog
+              open={runOpen}
+              onOpenChange={setRunOpen}
+              collectionId={id}
+              envs={data.envs}
+              initialEnvId={initialEnvId || getPreferredEnvId(id) || data.envs.find(e => e.isDefault)?.id}
+            />
+          )}
         </>
-      )}
-      {data && tab !== 'environments' && (
-        <RunDialog
-          open={runOpen}
-          onOpenChange={setRunOpen}
-          collectionId={id}
-          envs={data.envs}
-          initialEnvId={initialEnvId || getPreferredEnvId(id) || data.envs.find(e => e.isDefault)?.id}
-        />
       )}
     </div>
   );
