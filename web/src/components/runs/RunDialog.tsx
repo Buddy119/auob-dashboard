@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog } from '@/components/ui/Dialog';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -8,12 +8,14 @@ import { useCreateRun } from '@/features/runs/queries';
 import type { CollectionEnv } from '@/features/collections/types';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/components/ui/Toast';
+import { setPreferredEnvId } from '@/features/collections/envPref';
 
 type Props = {
   open: boolean;
   onOpenChange: (v: boolean) => void;
   collectionId: string;
   envs: CollectionEnv[];
+  initialEnvId?: string;
 };
 
 function parseIntOrUndefined(v: string, min = 0) {
@@ -23,12 +25,19 @@ function parseIntOrUndefined(v: string, min = 0) {
   return Math.floor(n);
 }
 
-export function RunDialog({ open, onOpenChange, collectionId, envs }: Props) {
+export function RunDialog({ open, onOpenChange, collectionId, envs, initialEnvId }: Props) {
   const router = useRouter();
   const { toast } = useToast();
   const createRun = useCreateRun(collectionId);
 
-  const [environmentId, setEnvironmentId] = useState<string>('');
+  const defaultEnv = envs.find(e => e.isDefault)?.id || '';
+  const [environmentId, setEnvironmentId] = useState<string>(initialEnvId || defaultEnv);
+
+  useEffect(() => {
+    if (open) {
+      setEnvironmentId(initialEnvId || defaultEnv || '');
+    }
+  }, [open, initialEnvId, defaultEnv]);
   const [timeoutRequestMs, setTimeoutRequestMs] = useState<string>('0');
   const [delayRequestMs, setDelayRequestMs] = useState<string>('0');
   const [maxDurationMs, setMaxDurationMs] = useState<string>(''); // optional
@@ -50,6 +59,7 @@ export function RunDialog({ open, onOpenChange, collectionId, envs }: Props) {
 
     try {
       const res = await createRun.mutateAsync(body);
+      if (environmentId) setPreferredEnvId(collectionId, environmentId);
       onOpenChange(false);
       router.push(`/runs/${res.runId}`);
     } catch (err: any) {
@@ -61,8 +71,10 @@ export function RunDialog({ open, onOpenChange, collectionId, envs }: Props) {
     <Dialog open={open} onClose={() => onOpenChange(false)} title="Run collection">
       <form onSubmit={onSubmit} className="space-y-4">
         <div>
-          <label className="block text-sm font-medium mb-1">Environment</label>
+          <label className="block text-sm font-medium mb-1" htmlFor="env-select">Environment</label>
           <select
+            id="env-select"
+            aria-label="Environment"
             className="h-9 w-full rounded-md border border-border/50 bg-bg px-3 text-sm dark:bg-zinc-900"
             value={environmentId}
             onChange={(e) => setEnvironmentId(e.target.value)}
@@ -74,7 +86,7 @@ export function RunDialog({ open, onOpenChange, collectionId, envs }: Props) {
               </option>
             ))}
           </select>
-          <p className="mt-1 text-xs opacity-70">Optional. Use the default environment if applicable.</p>
+          <p className="mt-1 text-xs opacity-70">Preselects your preferred env if set, otherwise the server default.</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
