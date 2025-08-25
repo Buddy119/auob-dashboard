@@ -9,6 +9,8 @@ import { AssertionsPanel } from '@/components/runs/AssertionsPanel';
 import { useEffect, useMemo, useState } from 'react';
 import { RunConsoleSkeleton } from '@/components/skeletons/RunConsoleSkeleton';
 import { ErrorPanel } from '@/components/common/ErrorPanel';
+import { useShortcuts } from '@/hooks/useShortcuts';
+import { LiveRegion } from '@/components/common/LiveRegion';
 
 const TERMINAL: string[] = ['success','partial','fail','timeout','error','cancelled'];
 
@@ -31,6 +33,10 @@ export default function RunPage({ params }: { params: { runId: string } }) {
   );
 
   const [selectedStepId, setSelectedStepId] = useState<string | null>(null);
+  const [liveMsg, setLiveMsg] = useState<string | null>(null);
+
+  const focusTimeline = () => (document.getElementById('timeline-list') as HTMLElement | null)?.focus();
+  const focusAssertions = () => (document.getElementById('assertions-panel') as HTMLElement | null)?.focus();
 
   // Select first step automatically when it appears
   useEffect(() => {
@@ -38,6 +44,22 @@ export default function RunPage({ params }: { params: { runId: string } }) {
       setSelectedStepId(steps[0].id);
     }
   }, [steps, selectedStepId]);
+  useEffect(() => { if (steps.length) focusTimeline(); }, [steps.length]);
+
+  useShortcuts([
+    { combo: 'a', handler: () => focusAssertions() },
+    { combo: 'c', handler: () => { if (run && !TERMINAL.includes(run.status)) cancelMut.mutate(runId); }, preventDefault: false },
+  ], [run?.status]);
+
+  useEffect(() => {
+    if (run?.status) setLiveMsg(`Run status ${run.status}`);
+  }, [run?.status]);
+  useEffect(() => {
+    if (steps.length) {
+      const s = steps[steps.length - 1];
+      setLiveMsg(`Step ${s.name} ${s.status}`);
+    }
+  }, [steps.length]);
 
   const { data: polledAssertions } = useRunAssertions(runId, selectedStepId, !connected || finished);
   const liveAssertions = selectedStepId ? (state.assertionsByStep[selectedStepId] ?? []) : [];
@@ -45,6 +67,7 @@ export default function RunPage({ params }: { params: { runId: string } }) {
 
   return (
     <div className="p-6 space-y-4">
+      <LiveRegion message={liveMsg} />
       {!run && <RunConsoleSkeleton />}
       {isError && <ErrorPanel message="Failed to load run." />}
 

@@ -75,6 +75,7 @@ export function RunDialog({ open, onOpenChange, collectionId, envs, initialEnvId
           <select
             id="env-select"
             aria-label="Environment"
+            autoFocus
             className="h-9 w-full rounded-md border border-border/50 bg-bg px-3 text-sm dark:bg-zinc-900"
             value={environmentId}
             onChange={(e) => setEnvironmentId(e.target.value)}
