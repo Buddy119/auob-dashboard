@@ -51,3 +51,21 @@ export type RunAssertionView = {
   status: AssertionStatus;
   errorMsg?: string | null;
 };
+
+export type RunListItem = {
+  id: string;
+  collectionId: string;
+  status: RunStatus;
+  health?: HealthStatus | null;
+  createdAt: string;
+  durationMs?: number | null;
+  p95Ms?: number | null;
+  failedRequests?: number | null;
+};
+
+export type RunListResponse = {
+  total: number;
+  limit: number;
+  offset: number;
+  items: RunListItem[];
+};
