@@ -16,6 +16,40 @@ type RunnerOpts = {
   maxDurationMs?: number;
 };
 
+const RESPONSE_PREVIEW_LIMIT = 256 * 1024; // 256KB
+const RESPONSE_STORE_LIMIT = 1024 * 1024 * 2; // 2MB cap
+const SENSITIVE_HEADER_KEYS = new Set(['authorization', 'proxy-authorization', 'cookie', 'set-cookie']);
+
+function isTextLike(contentType?: string | null) {
+  if (!contentType) return false;
+  const ct = contentType.toLowerCase();
+  return (
+    ct.startsWith('text/') ||
+    ct.includes('json') ||
+    ct.includes('xml') ||
+    ct.includes('javascript') ||
+    ct.includes('x-www-form-urlencoded') ||
+    ct.includes('svg')
+  );
+}
+
+function sanitizeHeaders(list: any[] | undefined | null) {
+  if (!Array.isArray(list)) return {} as Record<string, string>;
+  const acc: Record<string, string> = {};
+  for (const entry of list) {
+    if (!entry || typeof entry.key !== 'string') continue;
+    const key = entry.key;
+    const lower = key.toLowerCase();
+    const value = entry.value != null ? String(entry.value) : '';
+    if (SENSITIVE_HEADER_KEYS.has(lower) || lower.includes('token') || lower.includes('key')) {
+      acc[key] = '<redacted>';
+    } else {
+      acc[key] = value;
+    }
+  }
+  return acc;
+}
+
 type ActiveRun = {
   emitter: any;
   reason: 'cancel' | 'timeout' | null;
@@ -171,11 +205,47 @@ export class NewmanRunner {
               }
             }
             const code = args?.response?.code ?? null;
+            const statusText = typeof args?.response?.status === 'string' ? args.response.status : null;
             const rt = typeof args?.response?.responseTime === 'number' ? args.response.responseTime : null;
-            const rsize =
+            const rawSize =
               (args?.response?.stream && args.response.stream.length) ??
               args?.response?.responseSize ??
               null;
+            const headersList = typeof args?.response?.headers?.all === 'function' ? args.response.headers.all() : [];
+            const headers = sanitizeHeaders(headersList);
+            const ctEntry = headersList.find((h: any) => typeof h?.key === 'string' && h.key.toLowerCase() === 'content-type');
+            const contentType = typeof ctEntry?.value === 'string' ? ctEntry.value : null;
+            const rawStream = args?.response?.stream;
+            let bodyBuffer: Buffer | null = null;
+            if (rawStream) {
+              if (Buffer.isBuffer(rawStream)) {
+                bodyBuffer = Buffer.from(rawStream);
+              } else if (typeof rawStream.buffer === 'object' && Array.isArray(rawStream.data)) {
+                bodyBuffer = Buffer.from(rawStream.data);
+              } else {
+                try {
+                  bodyBuffer = Buffer.from(rawStream);
+                } catch {}
+              }
+            }
+            if (!bodyBuffer && typeof args?.response?.text === 'function') {
+              try {
+                const textRes = args.response.text();
+                if (typeof textRes === 'string') bodyBuffer = Buffer.from(textRes, 'utf8');
+              } catch {}
+            }
+            const storeBuffer = bodyBuffer
+              ? bodyBuffer.subarray(0, Math.min(bodyBuffer.length, RESPONSE_STORE_LIMIT))
+              : null;
+            const previewBuffer = storeBuffer
+              ? storeBuffer.subarray(0, Math.min(storeBuffer.length, RESPONSE_PREVIEW_LIMIT))
+              : null;
+            const bodyIsText = isTextLike(contentType);
+            const encoding = bodyIsText ? 'utf8' : 'base64';
+            const storedBody = storeBuffer
+              ? storeBuffer.toString(encoding === 'utf8' ? 'utf8' : 'base64')
+              : null;
+            const truncated = bodyBuffer ? bodyBuffer.length > (previewBuffer ? previewBuffer.length : 0) : false;
             const name = args?.item?.name ?? 'unnamed';
 
             const step = await this.prisma.runStep.create({
@@ -188,7 +258,14 @@ export class NewmanRunner {
                 status: StepStatus.success,
                 httpStatus: code,
                 latencyMs: rt,
-                responseSize: typeof rsize === 'number' ? rsize : null,
+                responseSize: typeof rawSize === 'number' ? rawSize : null,
+                responseStatus: typeof code === 'number' ? code : null,
+                responseStatusText: statusText,
+                responseHeaders: Object.keys(headers).length ? JSON.stringify(headers) : null,
+                responseContentType: contentType,
+                responseBody: storedBody,
+                responseBodyEncoding: storedBody ? encoding : null,
+                responseTruncated: !!truncated,
                 startedAt: new Date(),
                 endedAt: new Date(),
               },

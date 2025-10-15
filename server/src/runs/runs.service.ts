@@ -8,7 +8,68 @@ import { ListAssertionsDto } from './dto/list-assertions.dto';
 
 @Injectable()
 export class RunsService {
+  private static readonly RESPONSE_PREVIEW_CHAR_LIMIT = 256 * 1024; // 256KB
+
   constructor(private readonly prisma: PrismaService, private readonly executor: RunsExecutor) {}
+
+  private parseHeaders(serialized?: string | null): Record<string, string> {
+    if (!serialized) return {};
+    try {
+      const parsed = JSON.parse(serialized);
+      if (parsed && typeof parsed === 'object') {
+        const out: Record<string, string> = {};
+        for (const [k, v] of Object.entries(parsed as Record<string, unknown>)) {
+          if (typeof v === 'string') {
+            out[k] = v;
+          } else if (v != null) {
+            out[k] = String(v);
+          }
+        }
+        return out;
+      }
+    } catch {
+      // ignore parse failures and fall back to an empty map
+    }
+    return {};
+  }
+
+  private buildStepResponse(step: any, opts: { full?: boolean } = {}) {
+    const hasStatus = step.responseStatus != null || step.httpStatus != null;
+    const hasHeaders = !!step.responseHeaders;
+    const hasBody = typeof step.responseBody === 'string' && step.responseBody.length > 0;
+    if (!hasStatus && !hasHeaders && !hasBody) return null;
+
+    const encoding = step.responseBodyEncoding === 'base64' ? 'base64' : 'utf8';
+    const previewLimit = RunsService.RESPONSE_PREVIEW_CHAR_LIMIT;
+    const preview = hasBody && encoding === 'utf8'
+      ? step.responseBody.slice(0, previewLimit)
+      : null;
+    const truncated = Boolean(
+      step.responseTruncated || (encoding === 'utf8' && hasBody && step.responseBody.length > previewLimit),
+    );
+
+    const payload: any = {
+      status: step.responseStatus ?? step.httpStatus ?? null,
+      statusText: step.responseStatusText ?? null,
+      durationMs: step.latencyMs ?? null,
+      headers: this.parseHeaders(step.responseHeaders),
+      contentType: step.responseContentType ?? null,
+      size: step.responseSize ?? null,
+      truncated,
+    };
+
+    if (hasBody) {
+      payload.bodyEncoding = encoding;
+      if (encoding === 'utf8') {
+        payload.bodyPreview = preview ?? '';
+        if (opts.full) payload.body = step.responseBody;
+      } else if (opts.full) {
+        payload.body = step.responseBody;
+      }
+    }
+
+    return payload;
+  }
 
   async create(collectionId: string, dto: CreateRunDto) {
     const col = await this.prisma.collection.findUnique({ where: { id: collectionId } });
@@ -92,6 +153,47 @@ export class RunsService {
     ]);
 
     return { total, items, limit, offset };
+  }
+
+  async getStep(runId: string, stepId: string) {
+    const step = await this.prisma.runStep.findFirst({ where: { id: stepId, runId } });
+    if (!step) throw new BadRequestException('step not found');
+    return {
+      id: step.id,
+      name: step.name,
+      status: step.status,
+      orderIndex: step.orderIndex,
+      response: this.buildStepResponse(step),
+    };
+  }
+
+  async getStepResponse(runId: string, stepId: string) {
+    const step = await this.prisma.runStep.findFirst({ where: { id: stepId, runId } });
+    if (!step) throw new BadRequestException('step not found');
+    return {
+      id: step.id,
+      response: this.buildStepResponse(step, { full: true }),
+    };
+  }
+
+  async getStepResponseBody(runId: string, stepId: string) {
+    const step = await this.prisma.runStep.findFirst({
+      where: { id: stepId, runId },
+      select: {
+        responseBody: true,
+        responseBodyEncoding: true,
+        responseContentType: true,
+        responseTruncated: true,
+      },
+    });
+    if (!step || !step.responseBody) return null;
+    const encoding = step.responseBodyEncoding === 'base64' ? 'base64' : 'utf8';
+    const buffer = Buffer.from(step.responseBody, encoding);
+    return {
+      buffer,
+      contentType: step.responseContentType ?? 'application/octet-stream',
+      truncated: !!step.responseTruncated,
+    };
   }
 
   async cancel(runId: string) {

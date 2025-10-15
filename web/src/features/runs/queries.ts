@@ -2,7 +2,16 @@
 
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api';
-import type { CreateRunBody, CreateRunResponse, Run, RunAssertionView, RunStepView, RunListResponse } from './types';
+import type {
+  CreateRunBody,
+  CreateRunResponse,
+  Run,
+  RunAssertionView,
+  RunListResponse,
+  RunStepDetail,
+  RunStepResponse,
+  RunStepView,
+} from './types';
 import type { CollectionListItem, CollectionListResponse } from '@/features/collections/types';
 
 export function useCreateRun(collectionId: string) {
@@ -57,6 +66,26 @@ export function useRunAssertions(runId: string, stepId: string | null, enabled: 
     select: (res) => res.items.map(i => ({ stepId: i.runStepId, name: i.name, status: i.status, errorMsg: i.errorMsg ?? null })),
     staleTime: 1000,
     refetchInterval: enabled ? 2000 : false,
+  });
+}
+
+export function useRunStep(runId: string | null, stepId: string | null, enabled: boolean) {
+  return useQuery({
+    queryKey: ['run-step', runId, stepId],
+    queryFn: () => api.get<RunStepDetail>(`/api/runs/${runId}/steps/${stepId}`),
+    enabled: Boolean(runId && stepId && enabled),
+    staleTime: 1000,
+  });
+}
+
+export function useRunStepResponse(runId: string | null, stepId: string | null, enabled: boolean) {
+  return useQuery({
+    queryKey: ['run-step-response', runId, stepId],
+    queryFn: () => api.get<{ id: string; response: RunStepResponse | null }>(`/api/runs/${runId}/steps/${stepId}/response`),
+    enabled: Boolean(runId && stepId && enabled),
+    select: (res) => res.response,
+    staleTime: 0,
+    cacheTime: 5 * 60 * 1000,
   });
 }
 

@@ -45,6 +45,29 @@ export type RunStepView = {
   orderIndex?: number | null;
 };
 
+export type StepResponseEncoding = 'utf8' | 'base64';
+
+export type RunStepResponse = {
+  status: number | null;
+  statusText: string | null;
+  durationMs: number | null;
+  headers: Record<string, string>;
+  contentType: string | null;
+  size: number | null;
+  truncated: boolean;
+  bodyPreview?: string | null;
+  body?: string | null;
+  bodyEncoding?: StepResponseEncoding;
+};
+
+export type RunStepDetail = {
+  id: string;
+  name: string;
+  status: StepStatus;
+  orderIndex?: number | null;
+  response: RunStepResponse | null;
+};
+
 export type RunAssertionView = {
   stepId: string;
   name: string;
