@@ -43,6 +43,7 @@ describe('Runs (e2e)', () => {
     app = moduleFixture.createNestApplication<NestFastifyApplication>(new FastifyAdapter());
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await app.register(multipart as any);
+    app.setGlobalPrefix('api', { exclude: ['health'] });
     await app.init();
     await app.getHttpAdapter().getInstance().ready();
   });
@@ -89,5 +90,46 @@ describe('Runs (e2e)', () => {
 
     expect(list.body.total).toBeGreaterThanOrEqual(1);
     expect(list.body.items.find((r: any) => r.id === runId)).toBeTruthy();
+
+    const stepsRes = await request(app.getHttpServer())
+      .get(`/api/runs/${runId}/steps`)
+      .query({ limit: 10, offset: 0 })
+      .expect(200);
+
+    expect(Array.isArray(stepsRes.body.items)).toBe(true);
+    expect(stepsRes.body.items.length).toBeGreaterThan(0);
+
+    const stepId = stepsRes.body.items[0].id;
+    expect(stepId).toBeTruthy();
+
+    const stepDetail = await request(app.getHttpServer())
+      .get(`/api/runs/${runId}/steps/${stepId}`)
+      .expect(200);
+
+    expect(stepDetail.body.id).toBe(stepId);
+    expect(stepDetail.body.runId).toBe(runId);
+    expect(stepDetail.body.response).toBeDefined();
+    if (stepDetail.body.response) {
+      expect(stepDetail.body.response).toHaveProperty('status');
+      expect(stepDetail.body.response).toHaveProperty('headers');
+      expect(stepDetail.body.response).toHaveProperty('truncated');
+    }
+
+    const fullResponse = await request(app.getHttpServer())
+      .get(`/api/runs/${runId}/steps/${stepId}/response`)
+      .expect(200);
+
+    expect(fullResponse.body.id).toBe(stepId);
+    expect(fullResponse.body.runId).toBe(runId);
+    if (fullResponse.body.response) {
+      expect(fullResponse.body.response).toHaveProperty('bodyEncoding');
+    }
+
+    await request(app.getHttpServer())
+      .get(`/api/runs/${runId}/steps/does-not-exist`)
+      .expect(404)
+      .expect(res => {
+        expect(res.body.message).toBe('Step not found in run');
+      });
   });
 });

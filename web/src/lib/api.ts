@@ -25,10 +25,21 @@ async function request<T>(path: string, init?: RequestInit, timeoutMs = 15000): 
       timeout,
     ])) as Response;
     const text = await res.text();
-    const data = text ? JSON.parse(text) : null;
+    let data: unknown = null;
+    if (text) {
+      try {
+        data = JSON.parse(text);
+      } catch {
+        data = text;
+      }
+    }
     if (!res.ok) {
       const parsed = errorZ.safeParse(data);
-      const message = parsed.success ? parsed.data.message : res.statusText;
+      const message = parsed.success
+        ? parsed.data.message
+        : typeof data === 'string'
+          ? data
+          : res.statusText;
       throw Object.assign(
         new Error(typeof message === 'string' ? message : JSON.stringify(message)),
         { status: res.status, data },
@@ -62,10 +73,21 @@ async function requestMultipart<T>(path: string, form: FormData, timeoutMs = 600
       timeout,
     ])) as Response;
     const text = await res.text();
-    const data = text ? JSON.parse(text) : null;
+    let data: unknown = null;
+    if (text) {
+      try {
+        data = JSON.parse(text);
+      } catch {
+        data = text;
+      }
+    }
     if (!res.ok) {
       const parsed = errorZ.safeParse(data);
-      const message = parsed.success ? parsed.data.message : res.statusText;
+      const message = parsed.success
+        ? parsed.data.message
+        : typeof data === 'string'
+          ? data
+          : res.statusText;
       throw Object.assign(
         new Error(typeof message === 'string' ? message : JSON.stringify(message)),
         { status: res.status, data },

@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateRunDto } from './dto/create-run.dto';
 import { RunsExecutor } from './runs.executor';
@@ -9,6 +9,12 @@ import { ListAssertionsDto } from './dto/list-assertions.dto';
 @Injectable()
 export class RunsService {
   private static readonly RESPONSE_PREVIEW_CHAR_LIMIT = 256 * 1024; // 256KB
+  private static readonly SENSITIVE_HEADER_KEYS = [
+    'authorization',
+    'proxy-authorization',
+    'cookie',
+    'set-cookie',
+  ];
 
   constructor(private readonly prisma: PrismaService, private readonly executor: RunsExecutor) {}
 
@@ -33,28 +39,70 @@ export class RunsService {
     return {};
   }
 
+  private sanitizeHeaders(headers: Record<string, string>): Record<string, string> {
+    const sanitized: Record<string, string> = {};
+    for (const [key, value] of Object.entries(headers)) {
+      const lower = key.toLowerCase();
+      if (
+        RunsService.SENSITIVE_HEADER_KEYS.includes(lower) ||
+        lower.includes('token') ||
+        lower.includes('secret') ||
+        lower.includes('api-key')
+      ) {
+        sanitized[key] = '<redacted>';
+      } else {
+        sanitized[key] = value;
+      }
+    }
+    return sanitized;
+  }
+
+  private headerValue(headers: Record<string, string>, key: string): string | undefined {
+    const lower = key.toLowerCase();
+    for (const [name, value] of Object.entries(headers)) {
+      if (name.toLowerCase() === lower) return value;
+    }
+    return undefined;
+  }
+
   private buildStepResponse(step: any, opts: { full?: boolean } = {}) {
+    const parsedHeaders = this.parseHeaders(step.responseHeaders);
     const hasStatus = step.responseStatus != null || step.httpStatus != null;
-    const hasHeaders = !!step.responseHeaders;
-    const hasBody = typeof step.responseBody === 'string' && step.responseBody.length > 0;
+    const hasHeaders = Object.keys(parsedHeaders).length > 0;
+    const bodyStr = typeof step.responseBody === 'string' ? step.responseBody : null;
+    const hasBody = !!bodyStr && bodyStr.length > 0;
     if (!hasStatus && !hasHeaders && !hasBody) return null;
 
     const encoding = step.responseBodyEncoding === 'base64' ? 'base64' : 'utf8';
     const previewLimit = RunsService.RESPONSE_PREVIEW_CHAR_LIMIT;
-    const preview = hasBody && encoding === 'utf8'
-      ? step.responseBody.slice(0, previewLimit)
-      : null;
+    const preview = hasBody && encoding === 'utf8' ? bodyStr!.slice(0, previewLimit) : null;
     const truncated = Boolean(
-      step.responseTruncated || (encoding === 'utf8' && hasBody && step.responseBody.length > previewLimit),
+      step.responseTruncated || (encoding === 'utf8' && hasBody && bodyStr!.length > previewLimit),
     );
+
+    let computedSize: number | null = step.responseSize ?? null;
+    if (computedSize == null && hasBody) {
+      if (encoding === 'base64') {
+        try {
+          computedSize = Buffer.from(bodyStr!, 'base64').length;
+        } catch {
+          computedSize = null;
+        }
+      } else {
+        computedSize = Buffer.byteLength(bodyStr!, 'utf8');
+      }
+    }
+
+    const headers = this.sanitizeHeaders(parsedHeaders);
+    const contentType = step.responseContentType ?? this.headerValue(parsedHeaders, 'content-type') ?? null;
 
     const payload: any = {
       status: step.responseStatus ?? step.httpStatus ?? null,
       statusText: step.responseStatusText ?? null,
       durationMs: step.latencyMs ?? null,
-      headers: this.parseHeaders(step.responseHeaders),
-      contentType: step.responseContentType ?? null,
-      size: step.responseSize ?? null,
+      headers,
+      contentType,
+      size: computedSize,
       truncated,
     };
 
@@ -62,9 +110,9 @@ export class RunsService {
       payload.bodyEncoding = encoding;
       if (encoding === 'utf8') {
         payload.bodyPreview = preview ?? '';
-        if (opts.full) payload.body = step.responseBody;
+        if (opts.full) payload.body = bodyStr;
       } else if (opts.full) {
-        payload.body = step.responseBody;
+        payload.body = bodyStr;
       }
     }
 
@@ -156,22 +204,34 @@ export class RunsService {
   }
 
   async getStep(runId: string, stepId: string) {
-    const step = await this.prisma.runStep.findFirst({ where: { id: stepId, runId } });
-    if (!step) throw new BadRequestException('step not found');
+    const step = await this.prisma.runStep.findFirst({
+      where: { id: stepId, runId },
+      include: { assertions: { select: { id: true, name: true, status: true, errorMsg: true } } },
+    });
+    if (!step) throw new NotFoundException('Step not found in run');
     return {
       id: step.id,
+      runId: step.runId,
       name: step.name,
       status: step.status,
       orderIndex: step.orderIndex,
+      assertions: step.assertions.map((a) => ({
+        id: a.id,
+        stepId: step.id,
+        name: a.name,
+        status: a.status,
+        errorMsg: a.errorMsg ?? null,
+      })),
       response: this.buildStepResponse(step),
     };
   }
 
   async getStepResponse(runId: string, stepId: string) {
     const step = await this.prisma.runStep.findFirst({ where: { id: stepId, runId } });
-    if (!step) throw new BadRequestException('step not found');
+    if (!step) throw new NotFoundException('Step not found in run');
     return {
       id: step.id,
+      runId: step.runId,
       response: this.buildStepResponse(step, { full: true }),
     };
   }
@@ -186,7 +246,8 @@ export class RunsService {
         responseTruncated: true,
       },
     });
-    if (!step || !step.responseBody) return null;
+    if (!step) throw new NotFoundException('Step not found in run');
+    if (!step.responseBody) return null;
     const encoding = step.responseBodyEncoding === 'base64' ? 'base64' : 'utf8';
     const buffer = Buffer.from(step.responseBody, encoding);
     return {

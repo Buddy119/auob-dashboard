@@ -63,7 +63,14 @@ export function useRunAssertions(runId: string, stepId: string | null, enabled: 
       `/api/runs/${runId}/assertions${stepId ? `?stepId=${stepId}` : ''}`
     ),
     enabled,
-    select: (res) => res.items.map(i => ({ stepId: i.runStepId, name: i.name, status: i.status, errorMsg: i.errorMsg ?? null })),
+    select: (res) =>
+      res.items.map((i) => ({
+        id: i.id,
+        stepId: i.runStepId,
+        name: i.name,
+        status: i.status,
+        errorMsg: i.errorMsg ?? null,
+      })),
     staleTime: 1000,
     refetchInterval: enabled ? 2000 : false,
   });

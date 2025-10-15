@@ -10,37 +10,37 @@ import type { FastifyReply } from 'fastify';
 export class RunsController {
   constructor(private readonly svc: RunsService) {}
 
-  @Post('api/collections/:collectionId/run')
+  @Post('collections/:collectionId/run')
   async create(@Param('collectionId') collectionId: string, @Body() dto: CreateRunDto) {
     return this.svc.create(collectionId, dto);
   }
 
-  @Get('api/runs/:runId')
+  @Get('runs/:runId')
   async get(@Param('runId') runId: string) {
     return this.svc.get(runId);
   }
 
-  @Post('api/runs/:runId/cancel')
+  @Post('runs/:runId/cancel')
   async cancel(@Param('runId') runId: string) {
     return this.svc.cancel(runId);
   }
 
-  @Get('api/runs/:runId/steps')
+  @Get('runs/:runId/steps')
   async steps(@Param('runId') runId: string, @Query() q: ListRunStepsDto) {
     return this.svc.listSteps(runId, q);
   }
 
-  @Get('api/runs/:runId/steps/:stepId')
+  @Get('runs/:runId/steps/:stepId')
   async step(@Param('runId') runId: string, @Param('stepId') stepId: string) {
     return this.svc.getStep(runId, stepId);
   }
 
-  @Get('api/runs/:runId/steps/:stepId/response')
+  @Get('runs/:runId/steps/:stepId/response')
   async stepResponse(@Param('runId') runId: string, @Param('stepId') stepId: string) {
     return this.svc.getStepResponse(runId, stepId);
   }
 
-  @Get('api/runs/:runId/steps/:stepId/response/body')
+  @Get('runs/:runId/steps/:stepId/response/body')
   async stepResponseBody(
     @Param('runId') runId: string,
     @Param('stepId') stepId: string,
@@ -57,12 +57,12 @@ export class RunsController {
     return reply.send(payload.buffer);
   }
 
-  @Get('api/runs/:runId/assertions')
+  @Get('runs/:runId/assertions')
   async assertions(@Param('runId') runId: string, @Query() q: ListAssertionsDto) {
     return this.svc.listAssertions(runId, q);
   }
 
-  @Get('api/runs')
+  @Get('runs')
   async list(@Query() q: ListRunsQueryDto) {
     return this.svc.list(q);
   }

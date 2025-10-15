@@ -2,7 +2,7 @@ import { Controller, Get, Param, Req, Res } from '@nestjs/common';
 import { EventsService } from './events.service';
 import { FastifyRequest, FastifyReply } from 'fastify';
 
-@Controller('api/runs')
+@Controller('runs')
 export class RealtimeController {
   constructor(private readonly events: EventsService) {}
 

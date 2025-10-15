@@ -111,6 +111,7 @@ describe('Newman Runner (e2e)', () => {
 
     const moduleFixture: TestingModule = await Test.createTestingModule({ imports: [AppModule] }).compile();
     app = moduleFixture.createNestApplication<NestFastifyApplication>(new FastifyAdapter());
+    app.setGlobalPrefix('api', { exclude: ['health'] });
     await app.init();
     await app.getHttpAdapter().getInstance().register(multipart as any);
     await app.getHttpAdapter().getInstance().ready();

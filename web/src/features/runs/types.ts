@@ -62,13 +62,16 @@ export type RunStepResponse = {
 
 export type RunStepDetail = {
   id: string;
+  runId: string;
   name: string;
   status: StepStatus;
   orderIndex?: number | null;
+  assertions?: RunAssertionView[];
   response: RunStepResponse | null;
 };
 
 export type RunAssertionView = {
+  id?: string;
   stepId: string;
   name: string;
   status: AssertionStatus;
