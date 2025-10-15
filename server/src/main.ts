@@ -23,6 +23,10 @@ async function bootstrap() {
   const port = config.get<number>('PORT', 4000);
   const nodeEnv = config.get<string>('NODE_ENV', 'development');
 
+  app.setGlobalPrefix('api', {
+    exclude: ['health'],
+  });
+
   // Logger
   const logger = createLogger(nodeEnv);
   app.useLogger(logger);
@@ -40,7 +44,7 @@ async function bootstrap() {
     .setVersion(config.get<string>('SWAGGER_VERSION'))
     .build();
   const doc = SwaggerModule.createDocument(app, swaggerConfig);
-  SwaggerModule.setup('docs', app, doc);
+  SwaggerModule.setup('docs', app, doc, { useGlobalPrefix: false });
 
   await app.listen(port, '0.0.0.0');
   logger.log({ port, nodeEnv }, 'Server started');

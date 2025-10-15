@@ -38,6 +38,7 @@ describe('Collections indexing (e2e)', () => {
     // register multipart as in main bootstrap
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await app.register(multipart as any);
+    app.setGlobalPrefix('api', { exclude: ['health'] });
     await app.init();
     await app.getHttpAdapter().getInstance().ready();
   });

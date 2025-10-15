@@ -15,7 +15,7 @@ import { FastifyRequest } from 'fastify';
 import type { Multipart } from '@fastify/multipart';
 import { UpdateRequestDto } from './dto/update-request.dto';
 
-@Controller('api/collections')
+@Controller('collections')
 export class CollectionsController {
   constructor(private readonly svc: CollectionsService) {}
 

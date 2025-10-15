@@ -110,6 +110,7 @@ describe('SSE + Pagination + Critical Health (e2e)', () => {
 
     const moduleFixture: TestingModule = await Test.createTestingModule({ imports: [AppModule] }).compile();
     app = moduleFixture.createNestApplication<NestFastifyApplication>(new FastifyAdapter());
+    app.setGlobalPrefix('api', { exclude: ['health'] });
     await app.getHttpAdapter().getInstance().register(multipart as any);
 
     // Listen on ephemeral port so EventSource can connect
