@@ -70,11 +70,20 @@ export function useRunAssertions(runId: string, stepId: string | null, enabled: 
 }
 
 export function useRunStep(runId: string | null, stepId: string | null, enabled: boolean) {
+  const queryEnabled = Boolean(runId && stepId && enabled);
+
   return useQuery({
     queryKey: ['run-step', runId, stepId],
     queryFn: () => api.get<RunStepDetail>(`/api/runs/${runId}/steps/${stepId}`),
-    enabled: Boolean(runId && stepId && enabled),
+    enabled: queryEnabled,
     staleTime: 1000,
+    refetchInterval: (data) => {
+      if (!queryEnabled) return false;
+      if (!data) return 2000;
+      if (data.response) return false;
+      if (data.status === 'fail') return false;
+      return 2000;
+    },
   });
 }
 
