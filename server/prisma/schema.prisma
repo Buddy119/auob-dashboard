@@ -93,19 +93,26 @@ model Run {
 }
 
 model RunStep {
-  id           String    @id @default(cuid())
-  runId        String
-  requestId    String?
-  orderIndex   Int // sequence within the run
-  name         String
-  status       String
-  httpStatus   Int?
-  latencyMs    Int?
-  retries      Int       @default(0)
-  responseSize Int? // bytes
-  errorMsg     String?
-  startedAt    DateTime? // optional timestamps for granular timing
-  endedAt      DateTime?
+  id                   String    @id @default(cuid())
+  runId                String
+  requestId            String?
+  orderIndex           Int // sequence within the run
+  name                 String
+  status               String
+  httpStatus           Int?
+  latencyMs            Int?
+  retries              Int       @default(0)
+  responseSize         Int? // bytes
+  responseStatus       Int?
+  responseStatusText   String?
+  responseHeaders      String?
+  responseContentType  String?
+  responseBody         String?
+  responseBodyEncoding String?
+  responseTruncated    Boolean   @default(false)
+  errorMsg             String?
+  startedAt            DateTime? // optional timestamps for granular timing
+  endedAt              DateTime?
 
   // relations
   run        Run                @relation(fields: [runId], references: [id], onDelete: Cascade)
